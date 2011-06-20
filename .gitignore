@@ -1,0 +1,7 @@
+.DS_Store
+.settings/*
+.project
+.actionScriptProperties
+.flexProperties
+bin-debug/*
+!bin-debug/.gitignore

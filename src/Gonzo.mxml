@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx" 
+			   minWidth="200" minHeight="200" width="800" height="600" 
+			   initialize="init();"
+			   creationComplete="initUI();">
+	<fx:Script>
+		<![CDATA[
+			import flashx.textLayout.edit.EditManager;
+			
+			import mx.controls.Alert;
+			import mx.events.FlexEvent;
+			import mx.events.FlexNativeMenuEvent;
+			import mx.events.ResizeEvent;
+
+			private static const preHtml:String = "<html><head><style>h1 { color:#ff0000; }</style></head><body>";
+			private static const postHtml:String = "</body></html>";
+			private var isMac:Boolean = false;
+			private var isWin:Boolean = false;
+			
+			private var currentMarkdownFile:String = "";
+			private var currentCssFile:String = "";
+			
+			protected function init():void
+			{
+				isWin = (Capabilities.os.toLowerCase().indexOf("windows") >= 0);
+				isMac = (Capabilities.os.toLowerCase().indexOf("mac os") >= 0);				
+			}
+
+			protected function initUI():void {
+				// check for recently loaded files, otherwise
+				this.changeApplicationTitle("Untitled");
+			}
+
+			private function changeApplicationTitle(filename:String):void {
+				this.title = "Gonzo - " + filename;
+			}
+			
+			protected function textarea1_keyUpHandler(event:KeyboardEvent):void
+			{
+				myHtml.htmlText = preHtml + Showdown.makeHtml(myText.text) + postHtml;
+			}
+
+			protected function myText_keyDownHandler(event:KeyboardEvent):void
+			{
+				if(event.keyCode == Keyboard.TAB) 
+				{
+					var mgr:EditManager = TextArea(event.currentTarget).textFlow.interactionManager as EditManager;
+					mgr.insertText("\t");
+					event.stopPropagation();
+					event.preventDefault();
+				}
+			}
+			
+			private function keyEquivalentModifiers(item:Object):Array
+			{
+				var result:Array = new Array();
+				
+				var keyEquivField:String = menu.keyEquivalentField;
+				var altKeyField:String;
+				var ctrlKeyField:String;
+				var shiftKeyField:String;
+				if (item is XML)
+				{
+					altKeyField = "@altKey";
+					ctrlKeyField = "@controlKey";
+					shiftKeyField = "@shiftKey";
+				}
+				else if (item is Object)
+				{
+					altKeyField = "altKey";
+					ctrlKeyField = "controlKey";
+					shiftKeyField = "shiftKey";
+				}
+				
+				if (item[keyEquivField] == null || item[keyEquivField].length == 0)
+				{
+					return result;
+				}
+				
+				if (item[altKeyField] != null && item[altKeyField] == true)
+				{
+					if (isWin)
+					{
+						result.push(Keyboard.ALTERNATE);
+					}
+				}
+				
+				if (item[ctrlKeyField] != null && item[ctrlKeyField] == true)
+				{
+					if (isWin)
+					{
+						result.push(Keyboard.CONTROL);
+					}
+					else if (isMac)
+					{
+						result.push(Keyboard.COMMAND);
+					}
+				}
+				
+				if (item[shiftKeyField] != null && item[shiftKeyField] == true)
+				{
+					result.push(Keyboard.SHIFT);
+				}
+				
+				return result;
+			}
+			
+			private function fileSaveComplete(event:Event):void {
+				var file:File = event.target as File;
+				this.currentMarkdownFile = file.nativePath;
+				this.changeApplicationTitle(this.currentMarkdownFile);
+			}
+			
+			private function fileOpenComplete(event:Event):void {
+				var file:File = event.target as File;
+				var fs:FileStream = new FileStream();
+				fs.open(file, FileMode.READ);
+				var text:String = cleanStringForEditor(fs.readMultiByte(fs.bytesAvailable, "utf-8"));
+				fs.close();
+				myText.text = text;
+				this.currentMarkdownFile = file.nativePath;
+				this.changeApplicationTitle(this.currentMarkdownFile);
+			}
+			
+			private function doSaveAs():void {
+				var file:File = new File();
+				file.addEventListener(Event.COMPLETE, fileSaveComplete);
+				file.save(cleanStringForEditor(myText.text), "test.md");
+			}
+			
+			private function doSave():void {
+				var file:File = new File(this.currentMarkdownFile);
+				var fs:FileStream = new FileStream();
+				fs.open(file, FileMode.WRITE);
+				fs.writeMultiByte(cleanStringForEditor(myText.text), "utf-8");
+				fs.close();
+			}
+			
+			private function cleanStringForEditor(str:String):String {
+				var newStr:String = "";
+				for (var i:uint = 0; i < str.length; i++) {
+					var char:int = str.charCodeAt(i);
+					if ((char < 32 || char > 126) && (char != 9 && char != 10 && char != 13)) {
+						continue;
+					}
+					newStr += String.fromCharCode(char);
+				}
+				return newStr;
+			}
+			
+			private function menuItemClick(event:FlexNativeMenuEvent):void {
+				var node:XML = event.item as XML;
+				var id:String = node.attribute("id");
+				var file:File;
+				
+				if (id == "file_new") {
+					Alert.show("NEW!!!");
+				} else if (id == "file_open") {
+					file = new File();
+					file.addEventListener(Event.SELECT, fileOpenComplete);
+					file.browseForOpen("Open a markdown file...");
+				} else if (id == "file_save") {
+					if (this.currentMarkdownFile == "") {
+						this.doSaveAs();
+					} else {
+						this.doSave();
+					}
+				} else if (id == "file_saveAs") {
+					this.doSaveAs();
+				} else if (id == "file_exit") {
+					// check for unsaved buffers
+					NativeApplication.nativeApplication.exit();
+				} else {
+					trace(event.label);
+				}
+			}
+			
+			private function textAreaResize(event:ResizeEvent):void {
+				var groupHeight:Number = mainGroup.height - mainGroupLayout.paddingBottom - mainGroupLayout.paddingTop;
+			}
+
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<fx:XML format="e4x" id="menuData">
+			<root>
+				<menuitem label="File">
+					<menuitem label="New...">
+						<menuitem label="Markdown &amp; CSS" keyEquivalent="n" controlKey="true" id="file_new"/>
+						<menuitem label="Markdown" id="file_newMarkdown"/>
+						<menuitem label="CSS" id="file_newCss"/>
+					</menuitem>
+					<menuitem label="Open..." keyEquivalent="o" controlKey="true" id="file_open"/>
+					<menuitem label="Save" keyEquivalent="s" controlKey="true" id="file_save"/>
+					<menuitem label="Save As..." keyEquivalent="s" controlKey="true" shiftKey="true" id="file_saveAs"/>
+					<menuitem type="separator"/>
+					<menuitem label="Exit" keyEquivalent="w" controlKey="true" id="file_exit"/>
+				</menuitem>
+			</root>
+		</fx:XML>	
+	</fx:Declarations>
+
+	<s:menu>
+		<mx:FlexNativeMenu dataProvider="{menuData}" showRoot="false" labelField="@label" keyEquivalentField="@keyEquivalent" keyEquivalentModifiersFunction="keyEquivalentModifiers"
+						   itemClick="menuItemClick(event);"/>
+	</s:menu>	
+	
+	<s:Group x="0" y="0" width="100%" height="100%" id="mainGroup">
+		<s:layout>
+			<s:HorizontalLayout gap="10" paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10" id="mainGroupLayout"/>
+		</s:layout>
+		<s:TextArea id="myText" width="50%" height="100%" fontFamily="monaco" fontSize="16" resize="textAreaResize(event);"
+					keyUp="textarea1_keyUpHandler(event)" keyDown="myText_keyDownHandler(event)">
+		</s:TextArea>
+		<mx:HTML id="myHtml" width="50%" height="100%" borderColor="#000000"
+				 borderStyle="solid" borderVisible="true" tabEnabled="false" tabFocusEnabled="false"/>
+	</s:Group>
+</s:WindowedApplication>
