@@ -6,7 +6,8 @@
 				   labelField="@label" 
 				   keyEquivalentField="@keyEquivalent" 
 				   keyEquivalentModifiersFunction="keyEquivalentModifiers"
-				   dataProvider="{gonzoMenuData}">
+				   dataProvider="{gonzoMenuData}"
+				   itemClick="gonzoItemClickHandler(event)">
 	<fx:Declarations>
 		<fx:XML format="e4x" id="gonzoMenuData">
 			<root>
@@ -27,9 +28,74 @@
 	</fx:Declarations>
 	<fx:Script>
 		<![CDATA[
+			import mx.events.FlexNativeMenuEvent;
 			public var isWin:Boolean = false;
 			public var isMac:Boolean = false;
+			public var gonzo:Gonzo = null;
 			
+			private function doFileNew():void {
+				// do something
+			}
+			
+			private function doFileOpen():void {
+				var file:File = new File();
+				file.addEventListener(Event.SELECT, function(event:Event):void {
+					var openedFile:File = event.target as File;
+					gonzo.markdownTextArea.text = GonzoUtils.readStringFromFile(openedFile);
+					gonzo.currentMarkdownFile = openedFile.nativePath;
+					gonzo.updateGonzo(gonzo.currentMarkdownFile);
+				});
+				file.browseForOpen("Open a markdown file...");
+			}
+			
+			private function doFileSaveAs():void {
+				var file:File = new File();
+				file.addEventListener(Event.COMPLETE, function(event:Event):void {
+					var savedFile:File = event.target as File;
+					gonzo.currentMarkdownFile = savedFile.nativePath;
+					gonzo.updateGonzo(gonzo.currentMarkdownFile);
+				});
+				file.save(GonzoUtils.stripNonPrintableCharacters(gonzo.markdownTextArea.text), "Untitled.md");
+			}
+			
+			private function doFileSave():void {
+				GonzoUtils.writeStringToFilename(gonzo.currentMarkdownFile, gonzo.markdownTextArea.text);
+			}
+
+			protected function gonzoItemClickHandler(event:FlexNativeMenuEvent):void
+			{
+				var node:XML = event.item as XML;
+				var id:String = node.attribute("id");
+				var file:File;
+				
+				if (id == "file_new") {
+					this.doFileNew();
+				} else if (id == "file_open") {
+					this.doFileOpen();
+				} else if (id == "file_save") {
+					if (gonzo.currentMarkdownFile == "") {
+						this.doFileSaveAs();
+					} else {
+						this.doFileSave();
+					}
+				} else if (id == "file_saveAs") {
+					this.doFileSaveAs();
+				} else if (id == "file_exit") {
+					// check for unsaved buffers
+					NativeApplication.nativeApplication.exit();
+				} else {
+					trace(event.label);
+				}
+			}
+			
+			/**
+			 * Handles key strokes in a platform specific way.  CTRL == CTRL on Windows,
+			 * CTRL == COMMAND on Mac.
+			 * 
+			 * @param item An object that holds the menu entry for the keyEquivalent modifier
+			 * 
+			 * @return An array containing the modified keys pressed
+			 */
 			private function keyEquivalentModifiers(item:Object):Array
 			{
 				var result:Array = new Array();
@@ -83,6 +149,7 @@
 				
 				return result;
 			}
+
 		]]>
 	</fx:Script>
 </mx:FlexNativeMenu>
