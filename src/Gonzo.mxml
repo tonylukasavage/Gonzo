@@ -7,6 +7,7 @@
 			   initialize="init();"
 			   creationComplete="initUI();"
 			   skinClass="com.savagelook.Gonzo.skins.GonzoAppSkin">
+	<fx:Style source="gonzo.css"/>
 	<fx:Script>
 		<![CDATA[
 			import com.savagelook.Gonzo.GonzoSeparatorEvent;
@@ -20,29 +21,36 @@
 			private static const preHtml:String = "<html><head><style>h1 { color:#ff0000; }</style></head><body>";
 			private static const postHtml:String = "</body></html>";
 			private static const APP_NAME:String = "Gonzo";
-			public static const EDITOR_WIDTH_MINIMUM:Number = 100;
+			private static const EDITOR_WIDTH_MINIMUM:Number = 100;
+			private static const DEFAULT_FILENAME:String = "Untitled.md"
 			
-			private var cursorID:Number = 0;
 			public var currentMarkdownFile:String = "";
 			private var currentCssFile:String = "";
 			
 			protected function init():void
 			{
+				// determine OS and setup menu
 				gonzoMenu.isWin = (Capabilities.os.toLowerCase().indexOf("windows") >= 0);
 				gonzoMenu.isMac = (Capabilities.os.toLowerCase().indexOf("mac os") >= 0);	
 				gonzoMenu.gonzo = this;
 				
+				// resize the markdown and html editors when the separator is moved
 				gonzoSeparator.addEventListener(GonzoSeparatorEvent.SEPARATOR_MOVED, function(event:GonzoSeparatorEvent):void {
 					if (event.stageX - mainGroupLayout.paddingLeft > EDITOR_WIDTH_MINIMUM &&
 						event.stageX < mainGroup.width - mainGroupLayout.paddingRight - EDITOR_WIDTH_MINIMUM) {
 						markdownEditor.width = event.stageX - 12;
 					}
 				});
+				
+				// update Gonzo whenever we type in the markdown editor
+				markdownEditor.addEventListener(KeyboardEvent.KEY_UP, function(event:KeyboardEvent):void {
+					updateGonzo();
+				});
 			}
 
 			protected function initUI():void {
 				// TODO check for recently loaded files, otherwise
-				this.title = APP_NAME + " - Untitled";
+				this.updateGonzo(DEFAULT_FILENAME);
 			}
 			
 			private function updateTitle(filename:String):void {
@@ -60,11 +68,6 @@
 				this.statusText.text = "Word Count: " + wordCount.toString();
 				this.updateTitle(filename);	
 			}
-			
-			protected function markdownKeyUpHandler(event:KeyboardEvent):void
-			{
-				this.updateGonzo();
-			}
 		]]>
 	</fx:Script>
 
@@ -72,33 +75,14 @@
 		<gonzo:GonzoNativeMenu id="gonzoMenu"/>
 	</s:menu>	
 	
-	<s:Group x="0" y="0" width="100%" height="100%" id="topGroup">
+	<s:Group width="100%" height="100%" id="mainGroup">
 		<s:layout>
-			<s:VerticalLayout gap="0"/>
+			<s:HorizontalLayout gap="0" paddingLeft="10" paddingRight="10" paddingTop="10" paddingBottom="10" id="mainGroupLayout"/>
 		</s:layout>
-	
-		<s:Group x="0" width="100%" height="100%" id="mainGroup">
-			<s:layout>
-				<s:HorizontalLayout gap="0" paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10" id="mainGroupLayout"/>
-			</s:layout>
-			
-			<gonzo:GonzoTextArea
-				id="markdownEditor" 
-				width="100%" 
-				height="100%"
-				fontFamily="monaco" 
-				fontSize="16" 
-				keyUp="markdownKeyUpHandler(event)"/>
-			<gonzo:GonzoSeparator id="gonzoSeparator"/>
-			<mx:HTML 
-				id="htmlEditor" 
-				width="100%" 
-				height="100%" 
-				borderColor="#000000"
-				borderStyle="solid" 
-				borderVisible="true" 
-				tabEnabled="false" 
-				tabFocusEnabled="false"/>
-		</s:Group>
+		
+		<gonzo:GonzoTextArea id="markdownEditor" height="100%" width="100%" skinClass="com.savagelook.Gonzo.skins.GonzoEditorSkin"/>
+		<gonzo:GonzoSeparator id="gonzoSeparator"/>
+		<mx:HTML id="htmlEditor" width="100%" height="100%" tabEnabled="false" tabFocusEnabled="false"
+				 borderColor="#000000" borderStyle="solid" borderVisible="true"/>
 	</s:Group>
 </s:WindowedApplication>

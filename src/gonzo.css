@@ -1,0 +1,12 @@
+/* CSS file */
+@namespace s "library://ns.adobe.com/flex/spark";
+@namespace mx "library://ns.adobe.com/flex/mx";
+
+#markdownEditor {
+	fontFamily: monaco; 
+	fontSize:16;
+}
+
+mx|HTML {
+	 
+}

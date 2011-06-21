@@ -7,10 +7,7 @@
 		[HostComponent("spark.components.supportClasses.SkinnableComponent")]
 	</fx:Metadata>
 	
-	<s:Rect x="0" y="0" height="100%" width="100%" radiusX="0" radiusY="0">
-		<s:stroke>
-			<s:SolidColorStroke weight="1"/>
-		</s:stroke>
+	<s:Rect x="0" y="0" height="100%" width="100%">
 		<s:fill>
 			<s:LinearGradient rotation="0">
 				<s:GradientEntry color="#aaaaaa"/>
