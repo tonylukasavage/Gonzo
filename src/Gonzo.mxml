@@ -27,7 +27,7 @@
 			private var currentMarkdownFile:String = "";
 			private var currentCssFile:String = "";
 			
-			[Embed(source="flip_vertical.png")]
+			[Embed(source="assets/flip_vertical.png")]
 			private var resizeCursorSymbol:Class;
 			
 			protected function init():void

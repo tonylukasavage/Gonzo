@@ -117,7 +117,7 @@
 		<image72x72></image72x72>
 		<image114x114></image114x114>
 		-->
-		<image128x128>gonzo.png</image128x128>
+		<image128x128>assets/gonzo.png</image128x128>
 	</icon>
 
 	<!-- Whether the application handles the update when a user double-clicks an update version
