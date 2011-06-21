@@ -12,7 +12,6 @@
 		<![CDATA[
 			import mx.managers.CursorManager;
 			private var cursorID:Number;
-			public var gonzo:Gonzo = null;
 			
 			[Embed(source="assets/flip_vertical.png")]
 			private var resizeCursorSymbol:Class;
@@ -33,11 +32,11 @@
 			}
 			
 			private function stageMouseMove(event:MouseEvent):void {
-				if (event.stageX - gonzo.mainGroupLayout.paddingLeft > Gonzo.EDITOR_WIDTH_MINIMUM &&
-					event.stageX < gonzo.mainGroup.width - gonzo.mainGroupLayout.paddingRight - Gonzo.EDITOR_WIDTH_MINIMUM) {
-					gonzo.markdownTextArea.width = event.stageX - 12;
-				}
+				this.dispatchEvent(new GonzoSeparatorEvent(GonzoSeparatorEvent.SEPARATOR_MOVED, event.stageX));
 			}
 		]]>
 	</fx:Script>
+	<fx:Metadata>
+		[Event(name="gonzoSeparatorMoved", type="com.savagelook.Gonzo.GonzoSeparatorEvent")]
+	</fx:Metadata>
 </s:SkinnableComponent>

@@ -41,7 +41,7 @@
 				var file:File = new File();
 				file.addEventListener(Event.SELECT, function(event:Event):void {
 					var openedFile:File = event.target as File;
-					gonzo.markdownTextArea.text = GonzoUtils.readStringFromFile(openedFile);
+					gonzo.markdownEditor.text = GonzoUtils.readStringFromFile(openedFile);
 					gonzo.currentMarkdownFile = openedFile.nativePath;
 					gonzo.updateGonzo(gonzo.currentMarkdownFile);
 				});
@@ -55,11 +55,11 @@
 					gonzo.currentMarkdownFile = savedFile.nativePath;
 					gonzo.updateGonzo(gonzo.currentMarkdownFile);
 				});
-				file.save(GonzoUtils.stripNonPrintableCharacters(gonzo.markdownTextArea.text), "Untitled.md");
+				file.save(GonzoUtils.stripNonPrintableCharacters(gonzo.markdownEditor.text), "Untitled.md");
 			}
 			
 			private function doFileSave():void {
-				GonzoUtils.writeStringToFilename(gonzo.currentMarkdownFile, gonzo.markdownTextArea.text);
+				GonzoUtils.writeStringToFilename(gonzo.currentMarkdownFile, gonzo.markdownEditor.text);
 			}
 
 			protected function gonzoItemClickHandler(event:FlexNativeMenuEvent):void
