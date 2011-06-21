@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		xmlns:mx="library://ns.adobe.com/flex/mx">
+	<!-- host component -->
+	<fx:Metadata>
+		[HostComponent("spark.components.supportClasses.SkinnableComponent")]
+	</fx:Metadata>
+	
+	<s:Rect x="0" y="0" height="100%" width="100%" radiusX="0" radiusY="0">
+		<s:stroke>
+			<s:SolidColorStroke weight="1"/>
+		</s:stroke>
+		<s:fill>
+			<s:LinearGradient rotation="0">
+				<s:GradientEntry color="#aaaaaa"/>
+				<s:GradientEntry color="#eeeeee"/>
+			</s:LinearGradient>
+		</s:fill>
+	</s:Rect>
+</s:Skin>

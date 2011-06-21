@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:FlexNativeMenu xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				   xmlns:s="library://ns.adobe.com/flex/spark" 
+				   xmlns:mx="library://ns.adobe.com/flex/mx"
+				   showRoot="false" 
+				   labelField="@label" 
+				   keyEquivalentField="@keyEquivalent" 
+				   keyEquivalentModifiersFunction="keyEquivalentModifiers"
+				   dataProvider="{gonzoMenuData}">
+	<fx:Declarations>
+		<fx:XML format="e4x" id="gonzoMenuData">
+			<root>
+				<menuitem label="File">
+					<menuitem label="New...">
+						<menuitem label="Markdown &amp; CSS" keyEquivalent="n" controlKey="true" id="file_new"/>
+						<menuitem label="Markdown" id="file_newMarkdown"/>
+						<menuitem label="CSS" id="file_newCss"/>
+					</menuitem>
+					<menuitem label="Open..." keyEquivalent="o" controlKey="true" id="file_open"/>
+					<menuitem label="Save" keyEquivalent="s" controlKey="true" id="file_save"/>
+					<menuitem label="Save As..." keyEquivalent="s" controlKey="true" shiftKey="true" id="file_saveAs"/>
+					<menuitem type="separator"/>
+					<menuitem label="Exit" keyEquivalent="w" controlKey="true" id="file_exit"/>
+				</menuitem>
+			</root>
+		</fx:XML>	
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			public var isWin:Boolean = false;
+			public var isMac:Boolean = false;
+			
+			private function keyEquivalentModifiers(item:Object):Array
+			{
+				var result:Array = new Array();
+				
+				var keyEquivField:String = this.keyEquivalentField;
+				var altKeyField:String;
+				var ctrlKeyField:String;
+				var shiftKeyField:String;
+				if (item is XML)
+				{
+					altKeyField = "@altKey";
+					ctrlKeyField = "@controlKey";
+					shiftKeyField = "@shiftKey";
+				}
+				else if (item is Object)
+				{
+					altKeyField = "altKey";
+					ctrlKeyField = "controlKey";
+					shiftKeyField = "shiftKey";
+				}
+				
+				if (item[keyEquivField] == null || item[keyEquivField].length == 0)
+				{
+					return result;
+				}
+				
+				if (item[altKeyField] != null && item[altKeyField] == true)
+				{
+					if (isWin)
+					{
+						result.push(Keyboard.ALTERNATE);
+					}
+				}
+				
+				if (item[ctrlKeyField] != null && item[ctrlKeyField] == true)
+				{
+					if (isWin)
+					{
+						result.push(Keyboard.CONTROL);
+					}
+					else if (isMac)
+					{
+						result.push(Keyboard.COMMAND);
+					}
+				}
+				
+				if (item[shiftKeyField] != null && item[shiftKeyField] == true)
+				{
+					result.push(Keyboard.SHIFT);
+				}
+				
+				return result;
+			}
+		]]>
+	</fx:Script>
+</mx:FlexNativeMenu>

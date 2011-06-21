@@ -2,10 +2,11 @@
 <s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009" 
 			   xmlns:s="library://ns.adobe.com/flex/spark" 
 			   xmlns:mx="library://ns.adobe.com/flex/mx" 
+			   xmlns:gonzo="com.savagelook.Gonzo.*"
 			   minWidth="200" minHeight="200" width="800" height="600" 
 			   initialize="init();"
 			   creationComplete="initUI();"
-			   skinClass="GonzoAppSkin">
+			   skinClass="com.savagelook.Gonzo.GonzoAppSkin">
 	<fx:Script>
 		<![CDATA[
 			import flashx.textLayout.edit.EditManager;
@@ -19,8 +20,6 @@
 			private static const preHtml:String = "<html><head><style>h1 { color:#ff0000; }</style></head><body>";
 			private static const postHtml:String = "</body></html>";
 			private static const EDITOR_WIDTH_MINIMUM:Number = 100;
-			private var isMac:Boolean = false;
-			private var isWin:Boolean = false;
 			
 			private var cursorID:Number = 0;
 			private var isMoving:Boolean = false;
@@ -33,29 +32,34 @@
 			
 			protected function init():void
 			{
-				isWin = (Capabilities.os.toLowerCase().indexOf("windows") >= 0);
-				isMac = (Capabilities.os.toLowerCase().indexOf("mac os") >= 0);				
+				gonzoMenu.isWin = (Capabilities.os.toLowerCase().indexOf("windows") >= 0);
+				gonzoMenu.isMac = (Capabilities.os.toLowerCase().indexOf("mac os") >= 0);				
 			}
 
 			protected function initUI():void {
-				// check for recently loaded files, otherwise
-				this.changeApplicationTitle("Untitled");
-				//this.statusBar = new GonzoStatusBar();
-				//this.updateDisplayList(this.unscaledWidth, this.unscaledHeight);
-			}
-
-			private function changeApplicationTitle(filename:String):void {
-				this.title = "Gonzo - " + filename;
+				// TODO check for recently loaded files, otherwise
+				this.title = "Gonzo - Untitled";
 			}
 			
-			protected function textarea1_keyUpHandler(event:KeyboardEvent):void
-			{
+			private function updateTitle(filename:String):void {
+				if (filename != "") {
+					this.title = "Gonzo - " + filename;
+				}
+			}
+			
+			private function updateGonzo(filename:String = ""):void {
 				var html:String = Showdown.makeHtml(myText.text);
 				var rawText:String = StringUtils.stripTags(html);
 				var wordCount:uint = StringUtils.wordCount(rawText);
 				
 				myHtml.htmlText = preHtml + html + postHtml;
-				this.statusText.text = wordCount.toString();
+				this.statusText.text = "Word Count: " + wordCount.toString();
+				this.updateTitle(filename);	
+			}
+			
+			protected function textarea1_keyUpHandler(event:KeyboardEvent):void
+			{
+				updateGonzo();
 			}
 
 			protected function myText_keyDownHandler(event:KeyboardEvent):void
@@ -69,64 +73,12 @@
 				}
 			}
 			
-			private function keyEquivalentModifiers(item:Object):Array
-			{
-				var result:Array = new Array();
-				
-				var keyEquivField:String = menu.keyEquivalentField;
-				var altKeyField:String;
-				var ctrlKeyField:String;
-				var shiftKeyField:String;
-				if (item is XML)
-				{
-					altKeyField = "@altKey";
-					ctrlKeyField = "@controlKey";
-					shiftKeyField = "@shiftKey";
-				}
-				else if (item is Object)
-				{
-					altKeyField = "altKey";
-					ctrlKeyField = "controlKey";
-					shiftKeyField = "shiftKey";
-				}
-				
-				if (item[keyEquivField] == null || item[keyEquivField].length == 0)
-				{
-					return result;
-				}
-				
-				if (item[altKeyField] != null && item[altKeyField] == true)
-				{
-					if (isWin)
-					{
-						result.push(Keyboard.ALTERNATE);
-					}
-				}
-				
-				if (item[ctrlKeyField] != null && item[ctrlKeyField] == true)
-				{
-					if (isWin)
-					{
-						result.push(Keyboard.CONTROL);
-					}
-					else if (isMac)
-					{
-						result.push(Keyboard.COMMAND);
-					}
-				}
-				
-				if (item[shiftKeyField] != null && item[shiftKeyField] == true)
-				{
-					result.push(Keyboard.SHIFT);
-				}
-				
-				return result;
-			}
+			
 			
 			private function fileSaveComplete(event:Event):void {
 				var file:File = event.target as File;
 				this.currentMarkdownFile = file.nativePath;
-				this.changeApplicationTitle(this.currentMarkdownFile);
+				this.updateTitle(this.currentMarkdownFile);
 			}
 			
 			private function fileOpenComplete(event:Event):void {
@@ -137,7 +89,7 @@
 				fs.close();
 				myText.text = text;
 				this.currentMarkdownFile = file.nativePath;
-				this.changeApplicationTitle(this.currentMarkdownFile);
+				this.updateTitle(this.currentMarkdownFile);
 			}
 			
 			private function doSaveAs():void {
@@ -227,29 +179,9 @@
 
 		]]>
 	</fx:Script>
-	
-	<fx:Declarations>
-		<fx:XML format="e4x" id="menuData">
-			<root>
-				<menuitem label="File">
-					<menuitem label="New...">
-						<menuitem label="Markdown &amp; CSS" keyEquivalent="n" controlKey="true" id="file_new"/>
-						<menuitem label="Markdown" id="file_newMarkdown"/>
-						<menuitem label="CSS" id="file_newCss"/>
-					</menuitem>
-					<menuitem label="Open..." keyEquivalent="o" controlKey="true" id="file_open"/>
-					<menuitem label="Save" keyEquivalent="s" controlKey="true" id="file_save"/>
-					<menuitem label="Save As..." keyEquivalent="s" controlKey="true" shiftKey="true" id="file_saveAs"/>
-					<menuitem type="separator"/>
-					<menuitem label="Exit" keyEquivalent="w" controlKey="true" id="file_exit"/>
-				</menuitem>
-			</root>
-		</fx:XML>	
-	</fx:Declarations>
 
 	<s:menu>
-		<mx:FlexNativeMenu dataProvider="{menuData}" showRoot="false" labelField="@label" keyEquivalentField="@keyEquivalent" keyEquivalentModifiersFunction="keyEquivalentModifiers"
-						   itemClick="menuItemClick(event);"/>
+		<gonzo:GonzoNativeMenu id="gonzoMenu" itemClick="menuItemClick(event);"/>
 	</s:menu>	
 	
 	<s:Group x="0" y="0" width="100%" height="100%" id="topGroup">
@@ -267,7 +199,7 @@
 						keyUp="textarea1_keyUpHandler(event)" keyDown="myText_keyDownHandler(event)">
 			</s:TextArea>
 			<s:SkinnableComponent id="mySep" height="100%" 
-								  width="5" skinClass="EditorSeparatorSkin"
+								  width="5" skinClass="com.savagelook.Gonzo.GonzoSeparatorSkin"
 								  mouseOver="separatorMouseOver(event);" 
 								  mouseOut="separatorMouseOut(event);"
 								  mouseDown="separatorMouseDown(event);"
