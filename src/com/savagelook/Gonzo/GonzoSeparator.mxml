@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:SkinnableComponent xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					  xmlns:s="library://ns.adobe.com/flex/spark" 
+					  xmlns:mx="library://ns.adobe.com/flex/mx"
+					  height="100%" 
+					  width="5" 
+					  skinClass="com.savagelook.Gonzo.skins.GonzoSeparatorSkin"
+					  mouseOver="separatorMouseOver(event);" 
+					  mouseOut="separatorMouseOut(event);"
+					  mouseDown="separatorMouseDown(event);">
+	<fx:Script>
+		<![CDATA[
+			import mx.managers.CursorManager;
+			private var cursorID:Number;
+			public var gonzo:Gonzo = null;
+			
+			[Embed(source="assets/flip_vertical.png")]
+			private var resizeCursorSymbol:Class;
+			
+			private function separatorMouseOver(event:MouseEvent):void {
+				cursorID = CursorManager.setCursor(resizeCursorSymbol,2,-8,0);
+			}
+			
+			private function separatorMouseOut(event:MouseEvent):void {
+				CursorManager.removeCursor(cursorID);
+			}
+			
+			private function separatorMouseDown(event:MouseEvent):void {
+				systemManager.topLevelSystemManager.addEventListener(MouseEvent.MOUSE_MOVE, stageMouseMove, true);
+				systemManager.topLevelSystemManager.addEventListener(MouseEvent.MOUSE_UP, function(e:MouseEvent):void {
+					systemManager.topLevelSystemManager.removeEventListener(MouseEvent.MOUSE_MOVE, stageMouseMove, true);
+				}, true);
+			}
+			
+			private function stageMouseMove(event:MouseEvent):void {
+				if (event.stageX - gonzo.mainGroupLayout.paddingLeft > Gonzo.EDITOR_WIDTH_MINIMUM &&
+					event.stageX < gonzo.mainGroup.width - gonzo.mainGroupLayout.paddingRight - Gonzo.EDITOR_WIDTH_MINIMUM) {
+					gonzo.markdownTextArea.width = event.stageX - 12;
+				}
+			}
+		]]>
+	</fx:Script>
+</s:SkinnableComponent>
