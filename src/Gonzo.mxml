@@ -10,13 +10,8 @@
 	<fx:Style source="gonzo.css"/>
 	<fx:Script>
 		<![CDATA[
+			import com.adobe.linguistics.spelling.SpellUI;
 			import com.savagelook.Gonzo.GonzoSeparatorEvent;
-			import com.savagelook.Gonzo.GonzoUtils;
-			
-			import mx.controls.Alert;
-			import mx.core.WindowedApplication;
-			import mx.events.FlexNativeMenuEvent;
-			import mx.managers.CursorManager;
 
 			private static const preHtml:String = "<html><head><style>h1 { color:#ff0000; }</style></head><body>";
 			private static const postHtml:String = "</body></html>";
@@ -51,6 +46,7 @@
 			protected function initUI():void {
 				// TODO check for recently loaded files, otherwise
 				this.updateGonzo(DEFAULT_FILENAME);
+				SpellUI.enableSpelling(markdownEditor, "en_US");
 			}
 			
 			private function updateTitle(filename:String):void {
@@ -64,7 +60,7 @@
 				var rawText:String = StringUtils.stripTags(html);
 				var wordCount:uint = StringUtils.wordCount(rawText);
 				
-				htmlEditor.htmlText = preHtml + html + postHtml;
+				htmlPreview.htmlText = preHtml + html + postHtml;
 				this.statusText.text = "Word Count: " + wordCount.toString();
 				this.updateTitle(filename);	
 			}
@@ -80,9 +76,9 @@
 			<s:HorizontalLayout gap="0" paddingLeft="10" paddingRight="10" paddingTop="10" paddingBottom="10" id="mainGroupLayout"/>
 		</s:layout>
 		
-		<gonzo:GonzoTextArea id="markdownEditor" height="100%" width="100%" skinClass="com.savagelook.Gonzo.skins.GonzoEditorSkin"/>
+		<gonzo:GonzoTextArea id="markdownEditor" height="100%" width="100%"/>
 		<gonzo:GonzoSeparator id="gonzoSeparator"/>
-		<mx:HTML id="htmlEditor" width="100%" height="100%" tabEnabled="false" tabFocusEnabled="false"
+		<mx:HTML id="htmlPreview" width="100%" height="100%" tabEnabled="false" tabFocusEnabled="false"
 				 borderColor="#000000" borderStyle="solid" borderVisible="true"/>
 	</s:Group>
 </s:WindowedApplication>

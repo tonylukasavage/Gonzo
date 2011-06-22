@@ -1,22 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<s:TextArea xmlns:fx="http://ns.adobe.com/mxml/2009" 
+<mx:TextArea xmlns:fx="http://ns.adobe.com/mxml/2009" 
 			xmlns:s="library://ns.adobe.com/flex/spark" 
 			xmlns:mx="library://ns.adobe.com/flex/mx"
-			keyDown="keyDownHandlerForTabs(event)" >
+			keyFocusChange="textarea1_keyFocusChangeHandler(event)"
+			>
 
 	<fx:Script>
 		<![CDATA[
-			import flashx.textLayout.edit.EditManager;
-			protected function keyDownHandlerForTabs(event:KeyboardEvent):void
+			protected function textarea1_keyFocusChangeHandler(event:FocusEvent):void
 			{
-				if(event.keyCode == Keyboard.TAB) 
-				{
-					var mgr:EditManager = TextArea(event.currentTarget).textFlow.interactionManager as EditManager;
-					mgr.insertText("\t");
-					event.stopPropagation();
-					event.preventDefault();
-				}
+				event.preventDefault();
+				this.textField.replaceSelectedText("\t");
 			}
+
 		]]>
 	</fx:Script>
-</s:TextArea>
+</mx:TextArea>

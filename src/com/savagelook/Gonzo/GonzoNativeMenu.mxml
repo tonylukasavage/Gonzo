@@ -21,6 +21,8 @@
 					<menuitem label="Save" keyEquivalent="s" controlKey="true" id="file_save"/>
 					<menuitem label="Save As..." keyEquivalent="s" controlKey="true" shiftKey="true" id="file_saveAs"/>
 					<menuitem type="separator"/>
+					<menuitem label="Export HTML..." keyEquivalent="h" controlKey="true" id="file_export_html"/>
+					<menuitem type="separator"/>
 					<menuitem label="Exit" keyEquivalent="w" controlKey="true" id="file_exit"/>
 				</menuitem>
 			</root>
@@ -59,8 +61,11 @@
 			}
 			
 			private function doFileSave():void {
-				GonzoUtils.writeStringToFilename(gonzo.currentMarkdownFile, gonzo.markdownEditor.text);
-				
+				GonzoUtils.writeStringToFilename(gonzo.currentMarkdownFile, gonzo.markdownEditor.text);	
+			}
+			
+			private function doFileExportHtml():void {
+				GonzoUtils.writeStringToFilename(gonzo.currentMarkdownFile + ".html", Showdown.makeHtml(gonzo.markdownEditor.text));
 			}
 
 			protected function gonzoItemClickHandler(event:FlexNativeMenuEvent):void
@@ -81,6 +86,8 @@
 					}
 				} else if (id == "file_saveAs") {
 					this.doFileSaveAs();
+				} else if (id == "file_export_html") {
+					this.doFileExportHtml();
 				} else if (id == "file_exit") {
 					// check for unsaved buffers
 					NativeApplication.nativeApplication.exit();
