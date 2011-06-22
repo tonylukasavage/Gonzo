@@ -60,6 +60,7 @@
 			
 			private function doFileSave():void {
 				GonzoUtils.writeStringToFilename(gonzo.currentMarkdownFile, gonzo.markdownEditor.text);
+				
 			}
 
 			protected function gonzoItemClickHandler(event:FlexNativeMenuEvent):void

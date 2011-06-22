@@ -48,7 +48,7 @@
          * @playerversion AIR 1.5
          * @productversion Flex 4 
          */
-        static private const exclusions:Array = ["backgroundRect", "contentGroup", "statusText"];
+        static private const exclusions:Array = ["backgroundRect", "contentGroup", "statusText", "statusMessage"];
         
         /**
          * @private
@@ -124,12 +124,26 @@
                     </s:LinearGradientStroke>
                </s:stroke>
             </s:Rect>
+			
+			
         
             <!-- status text -->
             <!--- @copy spark.components.WindowedApplication#statusText -->
-            <s:Label id="statusText" top="2" bottom="2" left="10" right="10" verticalAlign="middle" 
-                fontSize="12" fontWeight="bold" color="0x585858" width="100%" maxDisplayedLines="1" />
-
+			<s:Group top="2" bottom="2" left="10" right="10" >
+				<s:layout>
+					<s:HorizontalLayout gap="0" verticalAlign="middle"/>
+				</s:layout>
+				<s:Label id="statusText" verticalAlign="middle" 
+						 fontSize="12" fontWeight="bold" color="0x585858" width="50%" maxDisplayedLines="1" />
+				<s:Label id="statusMessage" verticalAlign="middle" 
+						 fontSize="12" fontWeight="bold" color="0x585858" width="50%" maxDisplayedLines="1" />
+			<!--
+	            <s:Label id="statusText" top="2" bottom="2" left="10" right="10" verticalAlign="middle" 
+	                fontSize="12" fontWeight="bold" color="0x585858" width="50%" maxDisplayedLines="1" />
+				<s:Label id="statusMessage" top="2" bottom="2" left="10" right="10" verticalAlign="middle" 
+						 fontSize="12" fontWeight="bold" color="0x585858" width="50%" maxDisplayedLines="1" />
+				-->
+			</s:Group>
         </s:Group> 
     </s:Group>
 
