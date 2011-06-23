@@ -70,7 +70,7 @@ package {
 		// (see _ProcessListItems() for details):
 		private static var g_list_level:Number = 0;
 		
-		public static function makeHtml(text:String)
+		public static function makeHtml(text:String):String
 		{
 			// Clear the global hashes. If we don't clear these, you get conflicts
 			// from other articles when generating a page which contains more than
