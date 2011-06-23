@@ -45,6 +45,7 @@
 					var openedFile:File = event.target as File;
 					gonzo.markdownEditor.text = GonzoUtils.readStringFromFile(openedFile);
 					gonzo.currentMarkdownFile = openedFile.nativePath;
+					gonzo.progressBar.visible = true;
 					gonzo.updateGonzo(gonzo.currentMarkdownFile);
 				});
 				file.browseForOpen("Open a markdown file...");
