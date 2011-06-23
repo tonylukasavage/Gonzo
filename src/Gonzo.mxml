@@ -7,11 +7,12 @@
 			   initialize="init();"
 			   creationComplete="initUI();"
 			   skinClass="com.savagelook.Gonzo.skins.GonzoAppSkin">
-	<fx:Style source="gonzo.css"/>
 	<fx:Script>
 		<![CDATA[
 			import com.adobe.linguistics.spelling.SpellUI;
 			import com.savagelook.Gonzo.GonzoSeparatorEvent;
+			
+			import mx.core.mx_internal;
 
 			private static const preHtml:String = "<html><head><style>h1 { color:#ff0000; }</style></head><body>";
 			private static const postHtml:String = "</body></html>";
@@ -39,14 +40,23 @@
 				
 				// update Gonzo whenever we type in the markdown editor
 				markdownEditor.addEventListener(KeyboardEvent.KEY_UP, function(event:KeyboardEvent):void {
-					updateGonzo();
+					clearInterval(updateGonzoInterval);
+					updateGonzoInterval = setInterval(updateGonzo, 1000);
 				});
 			}
 
+			private var updateGonzoInterval:uint;
+			private var vsp:Number = 0;
+			private var isUpdatingHtml:Boolean = false;
+			
 			protected function initUI():void {
 				// TODO check for recently loaded files, otherwise
 				this.updateGonzo(DEFAULT_FILENAME);
 				SpellUI.enableSpelling(markdownEditor, "en_US");
+				
+				htmlPreview.addEventListener(Event.COMPLETE, function(e:Event):void {
+					(e.target as HTML).verticalScrollPosition = vsp;
+				});
 			}
 			
 			private function updateTitle(filename:String):void {
@@ -54,11 +64,12 @@
 					this.title = APP_NAME + " - " + filename;
 				}
 			}
-			
-			public function updateGonzo(filename:String = ""):void {
+
+			public function updateGonzo(filename:String = ""):void {		
 				var html:String = Showdown.makeHtml(markdownEditor.text);
 				var rawText:String = StringUtils.stripTags(html);
 				var wordCount:uint = StringUtils.wordCount(rawText);
+				vsp = htmlPreview.verticalScrollPosition;
 				
 				htmlPreview.htmlText = preHtml + html + postHtml;
 				this.statusText.text = "Word Count: " + wordCount.toString();
@@ -76,7 +87,8 @@
 			<s:HorizontalLayout gap="0" paddingLeft="10" paddingRight="10" paddingTop="10" paddingBottom="10" id="mainGroupLayout"/>
 		</s:layout>
 		
-		<gonzo:GonzoTextArea id="markdownEditor" height="100%" width="100%"/>
+		<gonzo:GonzoTextArea id="markdownEditor" height="100%" width="100%"
+							 fontFamily="Monaco" fontSize="16"/>
 		<gonzo:GonzoSeparator id="gonzoSeparator"/>
 		<mx:HTML id="htmlPreview" width="100%" height="100%" tabEnabled="false" tabFocusEnabled="false"
 				 borderColor="#000000" borderStyle="solid" borderVisible="true"/>
