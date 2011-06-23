@@ -12,12 +12,10 @@
 			import com.adobe.linguistics.spelling.SpellUI;
 			import com.savagelook.Gonzo.GonzoSeparatorEvent;
 			
-			import mx.core.mx_internal;
+			import mx.controls.ProgressBar;
 			
-			import spark.components.Label;
-			
-			[SkinPart(required="true", type="spark.components.Label")]
-			public var statusMessage:Label;
+			[SkinPart(required="true", type="mx.controls.ProgressBar")]
+			public var progressBar:ProgressBar;
 
 			private static const preHtml:String = "<html><head><style>h1 { color:#ff0000; }</style></head><body>";
 			private static const postHtml:String = "</body></html>";
@@ -27,6 +25,8 @@
 			
 			public var currentMarkdownFile:String = "";
 			private var currentCssFile:String = "";
+			private var updateGonzoInterval:uint;
+			private var htmlVerticalScrollPosition:Number = 0;
 			
 			protected function init():void
 			{
@@ -46,21 +46,19 @@
 				// update Gonzo whenever we type in the markdown editor
 				markdownEditor.addEventListener(KeyboardEvent.KEY_UP, function(event:KeyboardEvent):void {
 					clearInterval(updateGonzoInterval);
+					progressBar.visible = true;
 					updateGonzoInterval = setInterval(updateGonzo, 1000);
 				});
 			}
-
-			private var updateGonzoInterval:uint;
-			private var vsp:Number = 0;
-			private var isUpdatingHtml:Boolean = false;
 			
 			protected function initUI():void {
 				// TODO check for recently loaded files, otherwise
 				this.updateGonzo(DEFAULT_FILENAME);
 				SpellUI.enableSpelling(markdownEditor, "en_US");
-				statusMessage.text = "slfhdslfj";
+
 				htmlPreview.addEventListener(Event.COMPLETE, function(e:Event):void {
-					(e.target as HTML).verticalScrollPosition = vsp;
+					(e.target as HTML).verticalScrollPosition = htmlVerticalScrollPosition;
+					progressBar.visible = false;
 				});
 			}
 			
@@ -74,7 +72,7 @@
 				var html:String = Showdown.makeHtml(markdownEditor.text);
 				var rawText:String = StringUtils.stripTags(html);
 				var wordCount:uint = StringUtils.wordCount(rawText);
-				vsp = htmlPreview.verticalScrollPosition;
+				htmlVerticalScrollPosition = htmlPreview.verticalScrollPosition;
 				
 				htmlPreview.htmlText = preHtml + html + postHtml;
 				this.statusText.text = "Word Count: " + wordCount.toString();

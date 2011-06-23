@@ -33,7 +33,8 @@
       
 -->
 <s:SparkSkin xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark" 
-    xmlns:fb="http://ns.adobe.com/flashbuilder/2009" alpha.disabledGroup="0.5" >
+    xmlns:fb="http://ns.adobe.com/flashbuilder/2009" alpha.disabledGroup="0.5" 
+	xmlns:mx="library://ns.adobe.com/flex/mx" >
 	<fx:Metadata>
 		[HostComponent("spark.components.WindowedApplication")]
 	</fx:Metadata>
@@ -131,20 +132,15 @@
         
             <!-- status text -->
             <!--- @copy spark.components.WindowedApplication#statusText -->
-			<s:Group top="2" bottom="2" left="10" right="10" >
+			<s:Group top="2" bottom="2" left="10" right="20" >
 				<s:layout>
 					<s:HorizontalLayout gap="0" verticalAlign="middle"/>
 				</s:layout>
 				<s:Label id="statusText" verticalAlign="middle" 
-						 fontSize="12" fontWeight="bold" color="0x585858" width="50%" maxDisplayedLines="1" />
-				<s:Label id="statusMessage" verticalAlign="middle" 
-						 fontSize="12" fontWeight="bold" color="0x585858" width="50%" maxDisplayedLines="1" />
-			<!--
-	            <s:Label id="statusText" top="2" bottom="2" left="10" right="10" verticalAlign="middle" 
-	                fontSize="12" fontWeight="bold" color="0x585858" width="50%" maxDisplayedLines="1" />
-				<s:Label id="statusMessage" top="2" bottom="2" left="10" right="10" verticalAlign="middle" 
-						 fontSize="12" fontWeight="bold" color="0x585858" width="50%" maxDisplayedLines="1" />
-				-->
+						 fontSize="12" fontWeight="bold" color="0x585858" maxDisplayedLines="1" />
+				<s:Group width="100%"/>
+				<mx:ProgressBar id="progressBar" label="Loading HTML..." indeterminate="true" labelPlacement="left" height="20" color="0x585858" width="150"
+								 fontSize="12" fontWeight="bold"  visible="false"/> 
 			</s:Group>
         </s:Group> 
     </s:Group>
