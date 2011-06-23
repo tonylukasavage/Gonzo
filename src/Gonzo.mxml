@@ -13,6 +13,11 @@
 			import com.savagelook.Gonzo.GonzoSeparatorEvent;
 			
 			import mx.core.mx_internal;
+			
+			import spark.components.Label;
+			
+			[SkinPart(required="true", type="spark.components.Label")]
+			public var statusMessage:Label;
 
 			private static const preHtml:String = "<html><head><style>h1 { color:#ff0000; }</style></head><body>";
 			private static const postHtml:String = "</body></html>";
@@ -53,7 +58,7 @@
 				// TODO check for recently loaded files, otherwise
 				this.updateGonzo(DEFAULT_FILENAME);
 				SpellUI.enableSpelling(markdownEditor, "en_US");
-				
+				statusMessage.text = "slfhdslfj";
 				htmlPreview.addEventListener(Event.COMPLETE, function(e:Event):void {
 					(e.target as HTML).verticalScrollPosition = vsp;
 				});
