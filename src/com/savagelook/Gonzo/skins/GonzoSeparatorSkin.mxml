@@ -10,8 +10,9 @@
 	<s:Rect x="0" y="0" height="100%" width="100%">
 		<s:fill>
 			<s:LinearGradient rotation="0">
-				<s:GradientEntry color="#aaaaaa"/>
-				<s:GradientEntry color="#eeeeee"/>
+				<s:GradientEntry color="#222222"/>
+				<s:GradientEntry color="#dddddd"/>
+				<s:GradientEntry color="#222222"/>
 			</s:LinearGradient>
 		</s:fill>
 	</s:Rect>

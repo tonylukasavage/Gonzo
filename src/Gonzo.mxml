@@ -47,7 +47,7 @@
 				markdownEditor.addEventListener(KeyboardEvent.KEY_UP, function(event:KeyboardEvent):void {
 					clearInterval(updateGonzoInterval);
 					progressBar.visible = true;
-					updateGonzoInterval = setInterval(updateGonzo, 1000);
+					updateGonzoInterval = setInterval(updateGonzo, 500);
 				});
 			}
 			
