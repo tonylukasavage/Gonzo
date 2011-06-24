@@ -49,8 +49,8 @@
 				});
 				
 				// update Gonzo whenever we type in the markdown or css editor
-				markdownEditor.addEventListener(KeyboardEvent.KEY_UP, this.doEditorUpdate);
-				cssEditor.addEventListener(KeyboardEvent.KEY_UP, this.doEditorUpdate);
+				markdownEditor.addEventListener(Event.CHANGE, this.doEditorUpdate);
+				cssEditor.addEventListener(Event.CHANGE, this.doEditorUpdate);
 				
 				// maintain the vertical scroll position of the html preview
 				htmlRendered.addEventListener(Event.COMPLETE, function(e:Event):void {
@@ -61,17 +61,23 @@
 				this.updateGonzo(DEFAULT_FILENAME);
 			}
 			
-			private function doEditorUpdate(e:KeyboardEvent):void {
+			private var markdownBuffer:String = "";
+			public function doEditorUpdate(e:Event):void {
 				clearInterval(updateGonzoInterval);
 				progressBar.visible = true;
 				updateGonzoInterval = setInterval(updateGonzo, 500);
 			}
 
 			public function updateGonzo(filename:String = ""):void {	
+				clearInterval(updateGonzoInterval);
+				
 				var markdown:String = this.markdownEditor.text;
 				var wordCount:uint = StringUtils.wordCount(markdown);
 				var rawHtml:String = Showdown.makeHtml(markdown);
 				var fullHtml:String = this.constructFullHtml(rawHtml);
+				
+				this.markdownEditor.pushUndo(markdown);
+				this.cssEditor.pushUndo(this.cssEditor.text);
 				
 				this.htmlVerticalScrollPosition = this.htmlRendered.verticalScrollPosition;	
 				this.htmlRendered.htmlText = fullHtml;
@@ -110,7 +116,7 @@
 		
 		
 		<s:VGroup id="editorGroup" width="100%" height="100%" gap="0">
-			<s:ButtonBar dataProvider="{editorViewStack}"/>
+			<s:ButtonBar id="editorButtonBar" dataProvider="{editorViewStack}"/>
 			<mx:ViewStack id="editorViewStack"
 						  borderStyle="solid"
 						  width="100%" height="100%" creationPolicy="all">

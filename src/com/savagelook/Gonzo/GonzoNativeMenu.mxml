@@ -78,6 +78,22 @@
 			private function doFileExportHtml():void {
 				GonzoUtils.writeStringToFilename(gonzo.currentMarkdownFile + ".html", Showdown.makeHtml(gonzo.markdownEditor.text));
 			}
+			
+			private function doEditUndo():void {
+				var label:String = gonzo.editorButtonBar.selectedItem.label;
+				var editor:GonzoTextArea;
+				if (label == "markdown") {
+					editor = gonzo.markdownEditor;
+				} else if (label == "css") {
+					editor = gonzo.cssEditor;
+				}
+				
+				var undo:String = editor.popUndo();
+				if (undo != null) {
+					editor.text = undo;
+					gonzo.doEditorUpdate(new Event(""));
+				}
+			}
 
 			protected function gonzoItemClickHandler(event:FlexNativeMenuEvent):void
 			{
@@ -102,7 +118,11 @@
 				} else if (id == "file_exit") {
 					// check for unsaved buffers
 					NativeApplication.nativeApplication.exit();
-				} else if (id == "edit_cut") { 
+				} else if (id == "edit_undo") { 
+					this.doEditUndo();
+				} else if (id == "edit_redo") { 
+					// TODO
+				}else if (id == "edit_cut") { 
 					NativeApplication.nativeApplication.cut();
 				} else if (id == "edit_copy") { 
 					NativeApplication.nativeApplication.copy();

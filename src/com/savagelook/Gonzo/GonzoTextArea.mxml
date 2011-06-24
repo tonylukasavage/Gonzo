@@ -10,6 +10,11 @@
 			import mx.core.mx_internal;
 			use namespace mx_internal;
 			
+			private static const UNDO_BUFFER_SIZE:uint = 20;
+			
+			private var undoStack:Vector.<String> = new Vector.<String>();
+			private var undoNext:String = null;
+			
 			protected function textarea1_keyFocusChangeHandler(event:FocusEvent):void
 			{
 				event.preventDefault();
@@ -18,6 +23,39 @@
 			
 			public function getCaretIndex():int {
 				return this.getTextField().caretIndex;
+			}
+			
+			public function pushUndo(string:String):void {
+				while (undoStack.length >= UNDO_BUFFER_SIZE) {
+					undoStack.pop();
+				} 
+				
+				if (undoNext != string) {
+					if (undoNext != null) {
+						undoStack.unshift(undoNext);
+					}
+					undoNext = string;
+				}
+			}
+			
+			public function popUndo():String {
+				var undo:String;
+				if (undoStack.length > 0) {
+					undo = undoStack.shift();
+					undoNext = undo;
+				} else {
+					undo = null;
+				}
+				
+				return undo;
+			}
+			
+			public function printUndoStack():void {
+				for (var i:uint = 0; i < undoStack.length; i++) {
+					trace("STACK[" + i.toString() + "]:" + undoStack[i]);
+				}
+				trace("NEXT:" + undoNext);
+				trace("");
 			}
 
 		]]>
