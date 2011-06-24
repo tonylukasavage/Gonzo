@@ -13,8 +13,13 @@ The goal is to make this is a robust desktop application, so I will _not_ be att
 
 
 ## Todo
-* Add ability to edit and apply CSS within Gonzo
+* Add edit menu: copy, cut, paste, undo
+* show notifier for modified files
+* show character count next to word count
+* Create a local settings files for your Gonzo environment
+* A help menu option that loads up a markdown tutorial
 * More robust "project" environment to allow grouping of markdown and CSS with generated HTML
 * Major UI polish **(gonna need help here)**
 * Create Mac and Windows native downloads on the Github site
 * Create Wordpress-like buttons for adding markdown to highlighted text
+* Add a font picker for the editors

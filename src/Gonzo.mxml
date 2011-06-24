@@ -130,10 +130,10 @@
 			<mx:ViewStack id="previewViewStack"
 						  borderStyle="solid"
 						  width="100%" height="100%" creationPolicy="all">
-				<s:NavigatorContent id="htmlRenderedTab" label="html">
+				<s:NavigatorContent id="htmlRenderedTab" label="preview">
 					<mx:HTML id="htmlRendered" width="100%" height="100%" tabEnabled="false" tabFocusEnabled="false"/>
 				</s:NavigatorContent>
-				<s:NavigatorContent id="htmlRawTab" label="html - raw">
+				<s:NavigatorContent id="htmlRawTab" label="html">
 					<s:TextArea id="htmlRaw" width="100%" height="100%" tabEnabled="false" tabFocusEnabled="false" editable="false"  fontFamily="Monaco" fontSize="16"/>
 				</s:NavigatorContent>
 			</mx:ViewStack>
