@@ -27,7 +27,6 @@
 				</menuitem>
 				<menuitem label="Edit">
 					<menuitem label="Undo" keyEquivalent="z" controlKey="true" id="edit_undo"/>
-					<menuitem label="Redo" keyEquivalent="y" controlKey="true" id="edit_redo"/>
 					<menuitem type="separator"/>
 					<menuitem label="Cut" keyEquivalent="x" controlKey="true" id="edit_cut"/>
 					<menuitem label="Copy" keyEquivalent="c" controlKey="true" id="edit_copy"/>
