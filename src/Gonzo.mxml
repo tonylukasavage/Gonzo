@@ -20,7 +20,7 @@
 			private static const preHtml:String = "<html><head><style>h1 { color:#ff0000; }</style></head><body>";
 			private static const postHtml:String = "</body></html>";
 			private static const APP_NAME:String = "Gonzo";
-			private static const EDITOR_WIDTH_MINIMUM:Number = 100;
+			private static const EDITOR_WIDTH_MINIMUM:Number = 150;
 			private static const DEFAULT_FILENAME:String = "Untitled.md"
 			
 			public var currentMarkdownFile:String = "";
@@ -33,50 +33,67 @@
 				// determine OS and setup menu
 				gonzoMenu.isWin = (Capabilities.os.toLowerCase().indexOf("windows") >= 0);
 				gonzoMenu.isMac = (Capabilities.os.toLowerCase().indexOf("mac os") >= 0);	
-				gonzoMenu.gonzo = this;
+				gonzoMenu.gonzo = this;	
+			}
+			
+			protected function initUI():void {
+				// TODO check for recently loaded files, otherwise
+				SpellUI.enableSpelling(markdownEditor, "en_US");
 				
 				// resize the markdown and html editors when the separator is moved
 				gonzoSeparator.addEventListener(GonzoSeparatorEvent.SEPARATOR_MOVED, function(event:GonzoSeparatorEvent):void {
 					if (event.stageX - mainGroupLayout.paddingLeft > EDITOR_WIDTH_MINIMUM &&
 						event.stageX < mainGroup.width - mainGroupLayout.paddingRight - EDITOR_WIDTH_MINIMUM) {
-						markdownEditor.width = event.stageX - 12;
+						editorGroup.width = event.stageX - 12;
 					}
 				});
 				
-				// update Gonzo whenever we type in the markdown editor
-				markdownEditor.addEventListener(KeyboardEvent.KEY_UP, function(event:KeyboardEvent):void {
-					clearInterval(updateGonzoInterval);
-					progressBar.visible = true;
-					updateGonzoInterval = setInterval(updateGonzo, 500);
-				});
-			}
-			
-			protected function initUI():void {
-				// TODO check for recently loaded files, otherwise
-				this.updateGonzo(DEFAULT_FILENAME);
-				SpellUI.enableSpelling(markdownEditor, "en_US");
-
+				// update Gonzo whenever we type in the markdown or css editor
+				markdownEditor.addEventListener(KeyboardEvent.KEY_UP, this.doEditorUpdate);
+				cssEditor.addEventListener(KeyboardEvent.KEY_UP, this.doEditorUpdate);
+				
+				// maintain the vertical scroll position of the html preview
 				htmlRendered.addEventListener(Event.COMPLETE, function(e:Event):void {
 					(e.target as HTML).verticalScrollPosition = htmlVerticalScrollPosition;
 					progressBar.visible = false;
 				});
+				
+				this.updateGonzo(DEFAULT_FILENAME);
 			}
 			
-			private function updateTitle(filename:String):void {
+			private function doEditorUpdate(e:KeyboardEvent):void {
+				clearInterval(updateGonzoInterval);
+				progressBar.visible = true;
+				updateGonzoInterval = setInterval(updateGonzo, 500);
+			}
+
+			public function updateGonzo(filename:String = ""):void {	
+				var markdown:String = this.markdownEditor.text;
+				var wordCount:uint = StringUtils.wordCount(markdown);
+				var rawHtml:String = Showdown.makeHtml(markdown);
+				var fullHtml:String = this.constructFullHtml(rawHtml);
+				
+				this.htmlVerticalScrollPosition = this.htmlRendered.verticalScrollPosition;	
+				this.htmlRendered.htmlText = fullHtml;
+				this.htmlRaw.text = rawHtml;
+				this.statusText.text = "Word Count: " + wordCount.toString();
 				if (filename != "") {
 					this.title = APP_NAME + " - " + filename;
 				}
 			}
-
-			public function updateGonzo(filename:String = ""):void {		
-				var html:String = Showdown.makeHtml(markdownEditor.text);
-				var rawText:String = StringUtils.stripTags(html);
-				var wordCount:uint = StringUtils.wordCount(rawText);
-				htmlVerticalScrollPosition = htmlRendered.verticalScrollPosition;
+			
+			private function constructFullHtml(rawHtml:String):String {
+				const html1:String = "<html><head>";
+				const html2:String = "</head><body>";
+				const html3:String = "</body></html>";
 				
-				htmlRendered.htmlText = preHtml + html + postHtml;
-				this.statusText.text = "Word Count: " + wordCount.toString();
-				this.updateTitle(filename);	
+				var html:String = html1;
+				if (cssEditor.text != "") {
+					html += "<style>" + cssEditor.text + "</style>";
+				}
+				html += html2 + rawHtml + html3;
+				
+				return html;
 			}
 		]]>
 	</fx:Script>
@@ -90,22 +107,34 @@
 			<s:HorizontalLayout gap="0" paddingLeft="10" paddingRight="10" paddingTop="10" paddingBottom="10" id="mainGroupLayout"/>
 		</s:layout>
 		
-		<gonzo:GonzoTextArea id="markdownEditor" height="100%" width="100%"
-							 fontFamily="Monaco" fontSize="16"/>
+		
+		
+		<s:VGroup id="editorGroup" width="100%" height="100%" gap="0">
+			<s:ButtonBar dataProvider="{editorViewStack}"/>
+			<mx:ViewStack id="editorViewStack"
+						  borderStyle="solid"
+						  width="100%" height="100%" creationPolicy="all">
+				<s:NavigatorContent id="markdownEditorTab" label="markdown">
+					<gonzo:GonzoTextArea id="markdownEditor" height="100%" width="100%" fontFamily="Monaco" fontSize="16"/>
+				</s:NavigatorContent>
+				<s:NavigatorContent id="cssEditorTab" label="css">
+					<gonzo:GonzoTextArea id="cssEditor" height="100%" width="100%" fontFamily="Monaco" fontSize="16"/>
+				</s:NavigatorContent>
+			</mx:ViewStack>
+		</s:VGroup>
+		
 		<gonzo:GonzoSeparator id="gonzoSeparator"/>
 		
 		<s:VGroup width="100%" height="100%" gap="0">
-			<s:ButtonBar dataProvider="{gonzoViewStack}"/>
-			<mx:ViewStack id="gonzoViewStack"
+			<s:ButtonBar dataProvider="{previewViewStack}"/>
+			<mx:ViewStack id="previewViewStack"
 						  borderStyle="solid"
-						  width="100%" height="100%">
-				
-			
-				<s:NavigatorContent id="htmlRenderedTab" label="HTML - rendered">
+						  width="100%" height="100%" creationPolicy="all">
+				<s:NavigatorContent id="htmlRenderedTab" label="html">
 					<mx:HTML id="htmlRendered" width="100%" height="100%" tabEnabled="false" tabFocusEnabled="false"/>
 				</s:NavigatorContent>
-				<s:NavigatorContent id="htmlRawTab" label="HTML - raw">
-					<s:TextArea id="htmlRaw" width="100%" height="100%" tabEnabled="false" tabFocusEnabled="false" editable="false"/>
+				<s:NavigatorContent id="htmlRawTab" label="html - raw">
+					<s:TextArea id="htmlRaw" width="100%" height="100%" tabEnabled="false" tabFocusEnabled="false" editable="false"  fontFamily="Monaco" fontSize="16"/>
 				</s:NavigatorContent>
 			</mx:ViewStack>
 		</s:VGroup>
