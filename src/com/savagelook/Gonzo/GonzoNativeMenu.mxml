@@ -161,10 +161,10 @@
 				} else if (id == "window_preview") {
 					if (node.@toggled == "true") {
 						gonzo.gonzoSeparator.visible = gonzo.gonzoSeparator.includeInLayout = true;
-						gonzo.cssTabNavigator.visible = gonzo.cssTabNavigator.includeInLayout = true;
+						gonzo.previewTabNavigator.visible = gonzo.previewTabNavigator.includeInLayout = true;
 					} else {
 						gonzo.gonzoSeparator.visible = gonzo.gonzoSeparator.includeInLayout = false;
-						gonzo.cssTabNavigator.visible = gonzo.cssTabNavigator.includeInLayout = false;
+						gonzo.previewTabNavigator.visible = gonzo.previewTabNavigator.includeInLayout = false;
 						gonzo.editorTabNavigator.percentWidth = 100;
 					}
 				} else if (id == "format_wordWrap") {

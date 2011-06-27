@@ -3,6 +3,7 @@
 			   xmlns:s="library://ns.adobe.com/flex/spark" 
 			   xmlns:mx="library://ns.adobe.com/flex/mx" 
 			   xmlns:gonzo="com.savagelook.Gonzo.*"
+			   xmlns:flexlib="http://code.google.com/p/flexlib/"
 			   minWidth="200" minHeight="200" width="800" height="600" 
 			   initialize="init();"
 			   creationComplete="initUI();"
@@ -13,6 +14,9 @@
 			import com.savagelook.Gonzo.GonzoSeparatorEvent;
 			import com.savagelook.Gonzo.GonzoUtils;
 			
+			import flexlib.controls.tabBarClasses.SuperTab;
+			
+			import mx.containers.VBox;
 			import mx.controls.Alert;
 			import mx.controls.ProgressBar;
 			import mx.events.CloseEvent;
@@ -144,18 +148,28 @@
 			<s:HorizontalLayout gap="0" paddingLeft="10" paddingRight="10" paddingTop="10" paddingBottom="10" id="mainGroupLayout" verticalAlign="bottom"/>
 		</s:layout>
 		
-		<mx:TabNavigator id="editorTabNavigator" width="100%" height="100%" creationPolicy="all" borderStyle="solid" paddingTop="0" paddingBottom="0">
+		<flexlib:SuperTabNavigator id="editorTabNavigator"
+								   scrollSpeed="25"
+								   stopScrollingEvent="{MouseEvent.MOUSE_UP}"
+								   startScrollingEvent="{MouseEvent.MOUSE_DOWN}"
+								   width="100%"
+								   height="100%"
+								   horizontalGap="0"
+								   paddingTop="0"
+								   paddingBottom="0"
+								   closePolicy="{SuperTab.CLOSE_ROLLOVER}"
+								   creationPolicy="all">
 			<mx:VBox label="markdown">
 				<gonzo:GonzoTextArea id="markdownEditor" height="100%" width="100%" fontFamily="Monaco" fontSize="16"/>	
 			</mx:VBox>
 			<mx:VBox label="css" id="cssEditorTab">
 				<gonzo:GonzoTextArea id="cssEditor" height="100%" width="100%" fontFamily="Monaco" fontSize="16"/>
-			</mx:VBox>		
-		</mx:TabNavigator>
+			</mx:VBox>	
+		</flexlib:SuperTabNavigator>
 		
-		<gonzo:GonzoSeparator id="gonzoSeparator" height="{markdownEditor.height}"/>
+		<gonzo:GonzoSeparator id="gonzoSeparator" height="{editorTabNavigator.height}"/>
 		
-		<mx:TabNavigator id="cssTabNavigator" width="100%" height="100%" creationPolicy="all" borderStyle="solid" paddingTop="0" paddingBottom="0">
+		<mx:TabNavigator id="previewTabNavigator" width="100%" height="100%" creationPolicy="all" borderStyle="solid" paddingTop="0" paddingBottom="0">
 			<mx:VBox label="preview">
 				<mx:HTML id="htmlRendered" height="100%" width="100%" borderStyle="solid"/>	
 			</mx:VBox>
