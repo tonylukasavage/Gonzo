@@ -36,7 +36,7 @@
 				</menuitem>
 				<menuitem label="Window">
 					<menuitem label="Show CSS" id="window_css" type="check" toggled="true"/>
-					<menuitem label="Show Preview" id="window_preview" type="check" toggled="true"/>
+					<menuitem label="Show Preview" id="window_preview" type="check" toggled="true" keyEquivalent="p" controlKey="true"/>
 				</menuitem>
 			</root>
 		</fx:XML>	
@@ -141,7 +141,13 @@
 						gonzo.markdownEditor.setFocus();
 					}
 				} else if (id == "window_preview") {
-					
+					if (node.@toggled == "true") {
+						gonzo.gonzoSeparator.visible = gonzo.gonzoSeparator.includeInLayout = true;
+						gonzo.cssTabNavigator.visible = gonzo.cssTabNavigator.includeInLayout = true;
+					} else {
+						gonzo.gonzoSeparator.visible = gonzo.gonzoSeparator.includeInLayout = false;
+						gonzo.cssTabNavigator.visible = gonzo.cssTabNavigator.includeInLayout = false;
+					}
 				} else {
 					trace(event.label + "(" + id + ")");
 				}
