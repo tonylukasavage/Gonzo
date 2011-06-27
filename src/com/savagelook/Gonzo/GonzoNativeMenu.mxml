@@ -34,6 +34,10 @@
 					<menuitem type="separator"/>
 					<menuitem label="Select All" keyEquivalent="a" controlKey="true" id="edit_selectAll"/>
 				</menuitem>
+				<menuitem label="Window">
+					<menuitem label="Show CSS" id="window_css" type="check" toggled="true"/>
+					<menuitem label="Show Preview" id="window_preview" type="check" toggled="true"/>
+				</menuitem>
 			</root>
 		</fx:XML>	
 	</fx:Declarations>
@@ -79,7 +83,7 @@
 			}
 			
 			private function doEditUndo():void {
-				var label:String = gonzo.editorButtonBar.selectedItem.label;
+				var label:String = gonzo.editorTabNavigator.selectedChild.label;
 				var editor:GonzoTextArea;
 				if (label == "markdown") {
 					editor = gonzo.markdownEditor;
@@ -97,7 +101,7 @@
 			protected function gonzoItemClickHandler(event:FlexNativeMenuEvent):void
 			{
 				var node:XML = event.item as XML;
-				var id:String = node.attribute("id");
+				var id:String = node.@id;
 				var file:File;
 			
 				if (id == "file_new") {
@@ -129,7 +133,16 @@
 					NativeApplication.nativeApplication.paste();
 				} else if (id == "edit_selectAll") { 
 					NativeApplication.nativeApplication.selectAll();
-				}else {
+				} else if (id == "window_css") {
+					if (node.@toggled == "true") {
+						gonzo.editorTabNavigator.addChild(gonzo.cssEditorTab);
+					} else {
+						gonzo.editorTabNavigator.removeChild(gonzo.cssEditorTab);
+						gonzo.markdownEditor.setFocus();
+					}
+				} else if (id == "window_preview") {
+					
+				} else {
 					trace(event.label + "(" + id + ")");
 				}
 			}

@@ -44,7 +44,7 @@
 				gonzoSeparator.addEventListener(GonzoSeparatorEvent.SEPARATOR_MOVED, function(event:GonzoSeparatorEvent):void {
 					if (event.stageX - mainGroupLayout.paddingLeft > EDITOR_WIDTH_MINIMUM &&
 						event.stageX < mainGroup.width - mainGroupLayout.paddingRight - EDITOR_WIDTH_MINIMUM) {
-						editorGroup.width = event.stageX - 12;
+						editorTabNavigator.width = event.stageX - 12;
 					}
 				});
 				
@@ -113,36 +113,24 @@
 			<s:HorizontalLayout gap="0" paddingLeft="10" paddingRight="10" paddingTop="10" paddingBottom="10" id="mainGroupLayout" verticalAlign="bottom"/>
 		</s:layout>
 		
+		<mx:TabNavigator id="editorTabNavigator" width="100%" height="100%" creationPolicy="all" borderStyle="solid" paddingTop="0" paddingBottom="0">
+			<mx:VBox label="markdown">
+				<gonzo:GonzoTextArea id="markdownEditor" height="100%" width="100%" fontFamily="Monaco" fontSize="16"/>	
+			</mx:VBox>
+			<mx:VBox label="css" id="cssEditorTab">
+				<gonzo:GonzoTextArea id="cssEditor" height="100%" width="100%" fontFamily="Monaco" fontSize="16"/>
+			</mx:VBox>		
+		</mx:TabNavigator>
 		
+		<gonzo:GonzoSeparator id="gonzoSeparator" height="{markdownEditor.height}"/>
 		
-		<s:VGroup id="editorGroup" width="100%" height="100%" gap="0">
-			<s:ButtonBar id="editorButtonBar" dataProvider="{editorViewStack}"/>
-			<mx:ViewStack id="editorViewStack"
-						  borderStyle="solid"
-						  width="100%" height="100%" creationPolicy="all">
-				<s:NavigatorContent id="markdownEditorTab" label="markdown">
-					<gonzo:GonzoTextArea id="markdownEditor" height="100%" width="100%" fontFamily="Monaco" fontSize="16"/>
-				</s:NavigatorContent>
-				<s:NavigatorContent id="cssEditorTab" label="css">
-					<gonzo:GonzoTextArea id="cssEditor" height="100%" width="100%" fontFamily="Monaco" fontSize="16"/>
-				</s:NavigatorContent>
-			</mx:ViewStack>
-		</s:VGroup>
-		
-		<gonzo:GonzoSeparator id="gonzoSeparator" height="{editorViewStack.height}"/>
-		
-		<s:VGroup width="100%" height="100%" gap="0">
-			<s:ButtonBar dataProvider="{previewViewStack}"/>
-			<mx:ViewStack id="previewViewStack"
-						  borderStyle="solid"
-						  width="100%" height="100%" creationPolicy="all">
-				<s:NavigatorContent id="htmlRenderedTab" label="preview">
-					<mx:HTML id="htmlRendered" width="100%" height="100%" tabEnabled="false" tabFocusEnabled="false"/>
-				</s:NavigatorContent>
-				<s:NavigatorContent id="htmlRawTab" label="html">
-					<s:TextArea id="htmlRaw" width="100%" height="100%" tabEnabled="false" tabFocusEnabled="false" editable="false"  fontFamily="Monaco" fontSize="16"/>
-				</s:NavigatorContent>
-			</mx:ViewStack>
-		</s:VGroup>
+		<mx:TabNavigator width="100%" height="100%" creationPolicy="all" borderStyle="solid" paddingTop="0" paddingBottom="0">
+			<mx:VBox label="preview">
+				<mx:HTML id="htmlRendered" height="100%" width="100%" borderStyle="solid"/>	
+			</mx:VBox>
+			<mx:VBox label="html">
+				<s:TextArea id="htmlRaw" height="100%" width="100%" editable="false" fontFamily="Monaco" fontSize="16"/>
+			</mx:VBox>		
+		</mx:TabNavigator>
 	</s:Group>
 </s:WindowedApplication>
