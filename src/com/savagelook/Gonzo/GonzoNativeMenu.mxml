@@ -23,7 +23,7 @@
 					<menuitem type="separator"/>
 					<menuitem label="Export HTML..." keyEquivalent="h" controlKey="true" id="file_export_html"/>
 					<menuitem type="separator"/>
-					<menuitem label="Exit" keyEquivalent="w" controlKey="true" id="file_exit"/>
+					<menuitem label="Quit" keyEquivalent="q" controlKey="true" id="file_exit"/>
 				</menuitem>
 				<menuitem label="Edit">
 					<menuitem label="Undo" keyEquivalent="z" controlKey="true" id="edit_undo"/>
@@ -34,9 +34,15 @@
 					<menuitem type="separator"/>
 					<menuitem label="Select All" keyEquivalent="a" controlKey="true" id="edit_selectAll"/>
 				</menuitem>
+				<menuitem label="Format">
+					<menuitem label="Word Wrap" id="format_wordWrap" type="check" toggled="true" keyEquivalent="w" controlKey="true" shiftKey="true"/>
+				</menuitem>
 				<menuitem label="Window">
-					<menuitem label="Show CSS" id="window_css" type="check" toggled="true"/>
+					<menuitem label="Show CSS" id="window_css" type="check" toggled="true" keyEquivalent="c" controlKey="true" shiftKey="true"/>
 					<menuitem label="Show Preview" id="window_preview" type="check" toggled="true" keyEquivalent="p" controlKey="true"/>
+				</menuitem>
+				<menuitem label="Help">
+					<menuitem label="Tutorial" id="help_tutorial" keyEquivalent="t" controlKey="true" shiftKey="true"/>
 				</menuitem>
 			</root>
 		</fx:XML>	
@@ -147,7 +153,11 @@
 					} else {
 						gonzo.gonzoSeparator.visible = gonzo.gonzoSeparator.includeInLayout = false;
 						gonzo.cssTabNavigator.visible = gonzo.cssTabNavigator.includeInLayout = false;
+						gonzo.editorTabNavigator.percentWidth = 100;
 					}
+				} else if (id == "format_wordWrap") {
+					gonzo.markdownEditor.wordWrap = node.@toggled == "true";
+					gonzo.cssEditor.wordWrap = node.@toggled == "true";
 				} else {
 					trace(event.label + "(" + id + ")");
 				}
