@@ -11,6 +11,7 @@
 		<![CDATA[
 			import com.adobe.linguistics.spelling.SpellUI;
 			import com.savagelook.Gonzo.GonzoSeparatorEvent;
+			import com.savagelook.Gonzo.GonzoUtils;
 			
 			import mx.controls.ProgressBar;
 			
@@ -27,6 +28,7 @@
 			private var currentCssFile:String = "";
 			private var updateGonzoInterval:uint;
 			private var htmlVerticalScrollPosition:Number = 0;
+			public var isEditorModified:Boolean = false;
 			
 			protected function init():void
 			{
@@ -34,6 +36,7 @@
 				gonzoMenu.isWin = (Capabilities.os.toLowerCase().indexOf("windows") >= 0);
 				gonzoMenu.isMac = (Capabilities.os.toLowerCase().indexOf("mac os") >= 0);	
 				gonzoMenu.gonzo = this;	
+				GonzoUtils.DEFAULT_FILENAME = Gonzo.DEFAULT_FILENAME;
 			}
 			
 			protected function initUI():void {
@@ -63,6 +66,7 @@
 			
 			private var markdownBuffer:String = "";
 			public function doEditorUpdate(e:Event):void {
+				this.isEditorModified = true;
 				clearInterval(updateGonzoInterval);
 				progressBar.visible = true;
 				updateGonzoInterval = setInterval(updateGonzo, 500);
@@ -76,6 +80,10 @@
 				var rawHtml:String = Showdown.makeHtml(markdown);
 				var fullHtml:String = this.constructFullHtml(rawHtml);
 				
+				if (filename == "") {
+					filename = this.currentMarkdownFile == "" ? DEFAULT_FILENAME : this.currentMarkdownFile;
+				}
+				
 				this.markdownEditor.pushUndo(markdown);
 				this.cssEditor.pushUndo(this.cssEditor.text);
 				
@@ -83,9 +91,7 @@
 				this.htmlRendered.htmlText = fullHtml;
 				this.htmlRaw.text = rawHtml;
 				this.statusText.text = "Word Count: " + wordCount.toString();
-				if (filename != "") {
-					this.title = APP_NAME + " - " + filename;
-				}
+				this.title = APP_NAME + " - " + filename + (this.isEditorModified ? "*" : "");
 			}
 			
 			private function constructFullHtml(rawHtml:String):String {

@@ -6,9 +6,7 @@ package com.savagelook.Gonzo
 
 	public class GonzoUtils
 	{
-		public function GonzoUtils()
-		{
-		}
+		public static var DEFAULT_FILENAME:String = "";
 		
 		public static function stripNonPrintableCharacters(str:String):String {
 			var newStr:String = "";
@@ -43,6 +41,23 @@ package com.savagelook.Gonzo
 		
 		public static function writeStringToFilename(filename:String, string:String):void {
 			writeStringToFile(new File(filename), string);
+		}
+		
+		public static function getFilenameFromPath(fullPath:String):String {
+			var index:int = fullPath.lastIndexOf("\\");
+			if (index == -1) {
+				index = fullPath.lastIndexOf("/");
+			}
+			
+			if (index != -1) {
+				if (index+1 >= fullPath.length) {
+					return DEFAULT_FILENAME;
+				} else {
+					return fullPath.substr(index+1);
+				}
+			} else {
+				return fullPath;
+			}
 		}
 	}
 }

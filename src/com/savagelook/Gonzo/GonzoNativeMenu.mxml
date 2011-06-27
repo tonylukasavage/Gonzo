@@ -35,6 +35,7 @@
 					<menuitem label="Select All" keyEquivalent="a" controlKey="true" id="edit_selectAll"/>
 				</menuitem>
 				<menuitem label="Format">
+					<menuitem label="Select Font..." id="format_font" keyEquivalent="f" controlKey="true" shiftKey="true"/>
 					<menuitem label="Word Wrap" id="format_wordWrap" type="check" toggled="true" keyEquivalent="w" controlKey="true" shiftKey="true"/>
 				</menuitem>
 				<menuitem label="Window">
@@ -75,13 +76,18 @@
 				file.addEventListener(Event.COMPLETE, function(event:Event):void {
 					var savedFile:File = event.target as File;
 					gonzo.currentMarkdownFile = savedFile.nativePath;
+					gonzo.isEditorModified = false;
 					gonzo.updateGonzo(gonzo.currentMarkdownFile);
 				});
-				file.save(GonzoUtils.stripNonPrintableCharacters(gonzo.markdownEditor.text), "Untitled.md");
+				
+				var filename:String = gonzo.currentMarkdownFile == "" ? "Untitled.md" : GonzoUtils.getFilenameFromPath(gonzo.currentMarkdownFile);
+				file.save(GonzoUtils.stripNonPrintableCharacters(gonzo.markdownEditor.text), filename);
 			}
 			
 			private function doFileSave():void {
 				GonzoUtils.writeStringToFilename(gonzo.currentMarkdownFile, gonzo.markdownEditor.text);	
+				gonzo.isEditorModified = false;
+				gonzo.updateGonzo(gonzo.currentMarkdownFile);
 			}
 			
 			private function doFileExportHtml():void {
