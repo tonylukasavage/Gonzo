@@ -51,12 +51,17 @@
 	<fx:Script>
 		<![CDATA[
 			import mx.events.FlexNativeMenuEvent;
+			import mx.printing.FlexPrintJob;
 			public var isWin:Boolean = false;
 			public var isMac:Boolean = false;
 			public var gonzo:Gonzo = null;
 			
 			private function doFileNew():void {
-				// do something
+				gonzo.markdownEditor.text = "";
+				gonzo.cssEditor.text = "";
+				gonzo.currentMarkdownFile = Gonzo.DEFAULT_FILENAME;
+				gonzo.isEditorModified = false;
+				gonzo.updateGonzo();
 			}
 			
 			private function doFileOpen():void {
@@ -66,6 +71,7 @@
 					gonzo.markdownEditor.text = GonzoUtils.readStringFromFile(openedFile);
 					gonzo.currentMarkdownFile = openedFile.nativePath;
 					gonzo.progressBar.visible = true;
+					gonzo.isEditorModified = false;
 					gonzo.updateGonzo(gonzo.currentMarkdownFile);
 				});
 				file.browseForOpen("Open a markdown file...");
@@ -84,7 +90,12 @@
 				file.save(GonzoUtils.stripNonPrintableCharacters(gonzo.markdownEditor.text), filename);
 			}
 			
-			private function doFileSave():void {
+			public function doFileSave():void {
+				if (gonzo.currentMarkdownFile == "") {
+					this.doFileSaveAs();
+					return;
+				} 
+				
 				GonzoUtils.writeStringToFilename(gonzo.currentMarkdownFile, gonzo.markdownEditor.text);	
 				gonzo.isEditorModified = false;
 				gonzo.updateGonzo(gonzo.currentMarkdownFile);
@@ -117,22 +128,17 @@
 				var file:File;
 			
 				if (id == "file_new") {
-					this.doFileNew();
+					gonzo.checkForUnsavedEditors(doFileNew);
 				} else if (id == "file_open") {
-					this.doFileOpen();
+					gonzo.checkForUnsavedEditors(doFileOpen);
 				} else if (id == "file_save") {
-					if (gonzo.currentMarkdownFile == "") {
-						this.doFileSaveAs();
-					} else {
-						this.doFileSave();
-					}
+					this.doFileSave();
 				} else if (id == "file_saveAs") {
 					this.doFileSaveAs();
-				} else if (id == "file_export_html") {
+				}  else if (id == "file_export_html") {
 					this.doFileExportHtml();
 				} else if (id == "file_exit") {
-					// check for unsaved buffers
-					NativeApplication.nativeApplication.exit();
+					gonzo.checkForUnsavedEditors(NativeApplication.nativeApplication.exit);
 				} else if (id == "edit_undo") { 
 					this.doEditUndo();
 				} else if (id == "edit_redo") { 

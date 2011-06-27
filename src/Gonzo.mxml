@@ -13,7 +13,9 @@
 			import com.savagelook.Gonzo.GonzoSeparatorEvent;
 			import com.savagelook.Gonzo.GonzoUtils;
 			
+			import mx.controls.Alert;
 			import mx.controls.ProgressBar;
+			import mx.events.CloseEvent;
 			
 			[SkinPart(required="true", type="mx.controls.ProgressBar")]
 			public var progressBar:ProgressBar;
@@ -22,10 +24,9 @@
 			private static const postHtml:String = "</body></html>";
 			private static const APP_NAME:String = "Gonzo";
 			private static const EDITOR_WIDTH_MINIMUM:Number = 150;
-			private static const DEFAULT_FILENAME:String = "Untitled.md"
+			public static const DEFAULT_FILENAME:String = "Untitled.md"
 			
 			public var currentMarkdownFile:String = "";
-			private var currentCssFile:String = "";
 			private var updateGonzoInterval:uint;
 			private var htmlVerticalScrollPosition:Number = 0;
 			public var isEditorModified:Boolean = false;
@@ -106,6 +107,30 @@
 				html += html2 + rawHtml + html3;
 				
 				return html;
+			}
+			
+			public function checkForUnsavedEditors(command:Function):void {
+				if (!this.isEditorModified) {
+					command();
+					return;
+				}
+
+				Alert.show(
+					"'" + (this.currentMarkdownFile == "" ? DEFAULT_FILENAME : this.currentMarkdownFile) + "' has been modified.  Would you like to save it?",
+					"Save your changes?",
+					Alert.YES | Alert.NO | Alert.CANCEL,
+					this,
+					function(event:CloseEvent):void {
+						if (event.detail == Alert.YES) {
+							gonzoMenu.doFileSave();
+							command();
+						} else if (event.detail == Alert.NO) {
+							command();
+						} else if (event.detail == Alert.CANCEL) {
+							return;
+						}	
+					}
+				);
 			}
 		]]>
 	</fx:Script>
