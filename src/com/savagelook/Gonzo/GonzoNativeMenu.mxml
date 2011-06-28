@@ -12,21 +12,22 @@
 		<fx:XML format="e4x" id="gonzoMenuData">
 			<root>
 				<menuitem label="File">
-					<menuitem label="New...">
-						<menuitem label="Markdown &amp; CSS" keyEquivalent="n" controlKey="true" id="file_new"/>
-						<menuitem label="Markdown" id="file_newMarkdown"/>
-						<menuitem label="CSS" id="file_newCss"/>
-					</menuitem>
+					<menuitem label="New..." keyEquivalent="n" controlKey="true" id="file_new"/>
 					<menuitem label="Open..." keyEquivalent="o" controlKey="true" id="file_open"/>
+					<menuitem type="separator"/>
+					<menuitem label="Close" id="file_close" keyEquivalent="w" controlKey="true"/>
+					<menuitem label="Close All" id="file_closeAll" keyEquivalent="w" controlKey="true" shiftKey="true"/>
+					<menuitem type="separator"/>
 					<menuitem label="Save" keyEquivalent="s" controlKey="true" id="file_save"/>
-					<menuitem label="Save As..." keyEquivalent="s" controlKey="true" shiftKey="true" id="file_saveAs"/>
+					<menuitem label="Save As..." id="file_saveAs"/>
+					<menuitem label="Save All" keyEquivalent="s" controlKey="true" shiftKey="true" id="file_saveAll"/>
 					<menuitem type="separator"/>
 					<menuitem label="Export HTML..." keyEquivalent="h" controlKey="true" id="file_export_html"/>
 					<menuitem type="separator"/>
 					<menuitem label="Quit" keyEquivalent="q" controlKey="true" id="file_exit"/>
 				</menuitem>
 				<menuitem label="Edit">
-					<menuitem label="Undo" keyEquivalent="z" controlKey="true" id="edit_undo"/>
+					<menuitem label="Undo" keyEquivalent="z" controlKey="true" id="edit_undo" enabled="false"/>
 					<menuitem type="separator"/>
 					<menuitem label="Cut" keyEquivalent="x" controlKey="true" id="edit_cut"/>
 					<menuitem label="Copy" keyEquivalent="c" controlKey="true" id="edit_copy"/>
@@ -35,11 +36,9 @@
 					<menuitem label="Select All" keyEquivalent="a" controlKey="true" id="edit_selectAll"/>
 				</menuitem>
 				<menuitem label="Format">
-					<menuitem label="Select Font..." id="format_font" keyEquivalent="f" controlKey="true" shiftKey="true"/>
-					<menuitem label="Word Wrap" id="format_wordWrap" type="check" toggled="true" keyEquivalent="w" controlKey="true" shiftKey="true"/>
+					<menuitem label="Word Wrap" id="format_wordWrap" type="check" toggled="true"/>
 				</menuitem>
 				<menuitem label="Window">
-					<menuitem label="Show CSS" id="window_css" type="check" toggled="true" keyEquivalent="c" controlKey="true" shiftKey="true"/>
 					<menuitem label="Show Preview" id="window_preview" type="check" toggled="true" keyEquivalent="p" controlKey="true"/>
 				</menuitem>
 				<menuitem label="Help">
@@ -50,91 +49,146 @@
 	</fx:Declarations>
 	<fx:Script>
 		<![CDATA[
+			import mx.containers.VBox;
+			import mx.controls.Alert;
+			import mx.events.CloseEvent;
 			import mx.events.FlexNativeMenuEvent;
-			import mx.printing.FlexPrintJob;
+			import mx.managers.PopUpManager;
+			
 			public var isWin:Boolean = false;
 			public var isMac:Boolean = false;
 			public var gonzo:Gonzo = null;
 			
 			private function doFileNew():void {
-				gonzo.markdownEditor.text = "";
-				gonzo.cssEditor.text = "";
-				gonzo.currentMarkdownFile = Gonzo.DEFAULT_FILENAME;
-				gonzo.isEditorModified = false;
-				gonzo.updateGonzo();
+				var file:File = File.documentsDirectory.resolvePath(Gonzo.DEFAULT_FILENAME);
+				
+				file.addEventListener(Event.SELECT, function(event:Event):void {
+					var savedFile:File = event.target as File;
+					var editor:GonzoTextArea = gonzo.createAndAddNewEditor(savedFile.nativePath);
+					gonzo.updateGonzoWithEditor(editor, false);
+				});
+				file.browseForSave("Create a new markdown file");
 			}
 			
 			private function doFileOpen():void {
-				var file:File = new File();
+				var file:File = File.documentsDirectory;
 				file.addEventListener(Event.SELECT, function(event:Event):void {
 					var openedFile:File = event.target as File;
-					gonzo.markdownEditor.text = GonzoUtils.readStringFromFile(openedFile);
-					gonzo.currentMarkdownFile = openedFile.nativePath;
-					gonzo.progressBar.visible = true;
-					gonzo.isEditorModified = false;
-					gonzo.updateGonzo(gonzo.currentMarkdownFile);
+					var editor:GonzoTextArea = gonzo.createAndAddNewEditor(openedFile.nativePath);
+					editor.text = GonzoUtils.readStringFromFile(openedFile);
+					gonzo.updateGonzoWithEditor(editor);
 				});
-				file.browseForOpen("Open a markdown file...");
+				file.browseForOpen("Open a markdown file");
 			}
 			
 			private function doFileSaveAs():void {
-				var file:File = new File();
+				var file:File = File.documentsDirectory;
+				var editor:GonzoTextArea = gonzo.getCurrentEditor();
+				
+				if (editor == null) {
+					return;
+				}
+				
 				file.addEventListener(Event.COMPLETE, function(event:Event):void {
 					var savedFile:File = event.target as File;
-					gonzo.currentMarkdownFile = savedFile.nativePath;
-					gonzo.isEditorModified = false;
-					gonzo.updateGonzo(gonzo.currentMarkdownFile);
+					editor.isModified = false;
+					editor.fullPath = savedFile.nativePath;
+					gonzo.updateGonzoWithEditor(editor, false);
 				});
 				
-				var filename:String = gonzo.currentMarkdownFile == "" ? "Untitled.md" : GonzoUtils.getFilenameFromPath(gonzo.currentMarkdownFile);
-				file.save(GonzoUtils.stripNonPrintableCharacters(gonzo.markdownEditor.text), filename);
+				file.save(GonzoUtils.stripNonPrintableCharacters(editor.text), editor.filename);
 			}
 			
-			public function doFileSave():void {
-				if (gonzo.currentMarkdownFile == "") {
-					this.doFileSaveAs();
-					return;
-				} 
+			public function doFileSave(editor:GonzoTextArea = null):void {
+				editor = editor != null ? editor : gonzo.getCurrentEditor();
 				
-				GonzoUtils.writeStringToFilename(gonzo.currentMarkdownFile, gonzo.markdownEditor.text);	
-				gonzo.isEditorModified = false;
-				gonzo.updateGonzo(gonzo.currentMarkdownFile);
+				if (editor == null) {
+					return;
+				}
+				
+				GonzoUtils.writeStringToFilename(editor.fullPath, GonzoUtils.stripNonPrintableCharacters(editor.text));
+				editor.isModified = false;
+				gonzo.updateGonzoWithEditor(editor, false);
 			}
 			
 			private function doFileExportHtml():void {
-				GonzoUtils.writeStringToFilename(gonzo.currentMarkdownFile + ".html", Showdown.makeHtml(gonzo.markdownEditor.text));
+				var editor:GonzoTextArea = gonzo.getCurrentEditor();
+				
+				if (editor == null) {
+					return;
+				}
+				
+				var file:File = File.documentsDirectory.resolvePath(editor.filename + ".html");
+				file.browseForSave("Export as HTML");
+			}
+			
+			public function doFileClose():void {
+				var editor:GonzoTextArea = gonzo.getCurrentEditor();
+				if (editor == null) {
+					return;
+				}
+				
+				if (editor.isModified) {
+					Alert.show(
+						"'" + editor.filename + "' has been modified. Would you like to save it?",
+						"Save your changes?",
+						Alert.YES | Alert.NO | Alert.CANCEL,
+						gonzo,
+						function(event:CloseEvent):void {
+							if (event.detail == Alert.YES) {
+								gonzo.gonzoMenu.doFileSave(editor);
+								gonzo.editorTabNavigator.removeChild(editor.parent);
+								editor = null;
+							} else if (event.detail == Alert.NO) {
+								gonzo.editorTabNavigator.removeChild(editor.parent);
+								editor = null;
+							} else if (event.detail == Alert.CANCEL) {
+								return;
+							}	
+						}
+					);
+				} 
 			}
 			
 			private function doEditUndo():void {
-				var label:String = gonzo.editorTabNavigator.selectedChild.label;
-				var editor:GonzoTextArea;
-				if (label == "markdown") {
-					editor = gonzo.markdownEditor;
-				} else if (label == "css") {
-					editor = gonzo.cssEditor;
-				}
-				
-				var undo:String = editor.popUndo();
-				if (undo != null) {
-					editor.text = undo;
-					gonzo.doEditorUpdate(new Event(""));
-				}
+//				var editor:GonzoTextArea = gonzo.getCurrentEditor();
+//				
+//				if (editor == null) {
+//					return;
+//				}
+//				
+//				var label:String = gonzo.editorTabNavigator.selectedChild.label;
+//				var editor:GonzoTextArea;
+//				if (label == "markdown") {
+//				//	editor = gonzo.markdownEditor;
+//				} else if (label == "css") {
+//					editor = gonzo.cssEditor;
+//				}
+//				
+//				var undo:String = editor.popUndo();
+//				if (undo != null) {
+//					editor.text = undo;
+//					gonzo.updateGonzoWithEditor(editor, true);
+//				}
 			}
 
 			protected function gonzoItemClickHandler(event:FlexNativeMenuEvent):void
 			{
 				var node:XML = event.item as XML;
 				var id:String = node.@id;
-				var file:File;
 			
 				if (id == "file_new") {
-					gonzo.checkForUnsavedEditors(doFileNew);
+					doFileNew();
 				} else if (id == "file_open") {
-					gonzo.checkForUnsavedEditors(doFileOpen);
+					doFileOpen();
 				} else if (id == "file_save") {
 					this.doFileSave();
 				} else if (id == "file_saveAs") {
 					this.doFileSaveAs();
+				} else if (id == "file_close") {
+					this.doFileClose();	
+				} else if (id == "file_closeAll") {
+					gonzo.checkForUnsavedEditors(gonzo.editorTabNavigator.removeAll);
 				}  else if (id == "file_export_html") {
 					this.doFileExportHtml();
 				} else if (id == "file_exit") {
@@ -151,13 +205,6 @@
 					NativeApplication.nativeApplication.paste();
 				} else if (id == "edit_selectAll") { 
 					NativeApplication.nativeApplication.selectAll();
-				} else if (id == "window_css") {
-					if (node.@toggled == "true") {
-						gonzo.editorTabNavigator.addChild(gonzo.cssEditorTab);
-					} else {
-						gonzo.editorTabNavigator.removeChild(gonzo.cssEditorTab);
-						gonzo.markdownEditor.setFocus();
-					}
 				} else if (id == "window_preview") {
 					if (node.@toggled == "true") {
 						gonzo.gonzoSeparator.visible = gonzo.gonzoSeparator.includeInLayout = true;
@@ -168,8 +215,12 @@
 						gonzo.editorTabNavigator.percentWidth = 100;
 					}
 				} else if (id == "format_wordWrap") {
-					gonzo.markdownEditor.wordWrap = node.@toggled == "true";
-					gonzo.cssEditor.wordWrap = node.@toggled == "true";
+					var doWrap:Boolean = node.@toggled == "true";
+					for (var i:uint = 0; i < gonzo.editorTabNavigator.numChildren; i++) {
+						var vbox:VBox = gonzo.editorTabNavigator.getChildAt(i) as VBox;
+						var editor:GonzoTextArea = vbox.getChildByName("editor") as GonzoTextArea;
+						editor.wordWrap = doWrap;
+					}
 				} else {
 					trace(event.label + "(" + id + ")");
 				}

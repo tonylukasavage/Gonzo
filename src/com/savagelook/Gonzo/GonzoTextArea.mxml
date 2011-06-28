@@ -2,20 +2,31 @@
 <mx:TextArea xmlns:fx="http://ns.adobe.com/mxml/2009" 
 			xmlns:s="library://ns.adobe.com/flex/spark" 
 			xmlns:mx="library://ns.adobe.com/flex/mx"
-			keyFocusChange="textarea1_keyFocusChangeHandler(event)"
+			keyFocusChange="onKeyFocusChange(event)"
+			creationComplete="onCreationComplete(event)"
 			>
-
 	<fx:Script>
 		<![CDATA[
+			import com.adobe.linguistics.spelling.SpellUI;
+			
 			import mx.core.mx_internal;
+			import mx.events.FlexEvent;
 			use namespace mx_internal;
 			
 			private static const UNDO_BUFFER_SIZE:uint = 20;
 			
-			private var undoStack:Vector.<String> = new Vector.<String>();
-			private var undoNext:String = null;
+			private var _undoStack:Vector.<String> = new Vector.<String>();
+			private var _undoNext:String = null;
+			private var _fullPath:String;
+			private var _isModified:Boolean = false;
+			private var _updateInterval:uint;
 			
-			protected function textarea1_keyFocusChangeHandler(event:FocusEvent):void
+			protected function onCreationComplete(event:FlexEvent):void
+			{
+				SpellUI.enableSpelling(this, "en_US");
+			}
+			
+			protected function onKeyFocusChange(event:FocusEvent):void
 			{
 				event.preventDefault();
 				this.textField.replaceSelectedText("\t");
@@ -25,24 +36,30 @@
 				return this.getTextField().caretIndex;
 			}
 			
+			public function updateEditor():void {
+				clearInterval(this.updateInterval);
+				this.pushUndo(this.text);
+				this.dispatchEvent(new Event(Event.COMPLETE));	
+			}
+			
 			public function pushUndo(string:String):void {
-				while (undoStack.length >= UNDO_BUFFER_SIZE) {
-					undoStack.pop();
+				while (_undoStack.length >= UNDO_BUFFER_SIZE) {
+					_undoStack.pop();
 				} 
 				
-				if (undoNext != string) {
-					if (undoNext != null) {
-						undoStack.unshift(undoNext);
+				if (_undoNext != string) {
+					if (_undoNext != null) {
+						_undoStack.unshift(_undoNext);
 					}
-					undoNext = string;
+					_undoNext = string;
 				}
 			}
 			
 			public function popUndo():String {
 				var undo:String;
-				if (undoStack.length > 0) {
-					undo = undoStack.shift();
-					undoNext = undo;
+				if (_undoStack.length > 0) {
+					undo = _undoStack.shift();
+					_undoNext = undo;
 				} else {
 					undo = null;
 				}
@@ -50,14 +67,50 @@
 				return undo;
 			}
 			
+			////////// Helper Functions //////////
 			public function printUndoStack():void {
-				for (var i:uint = 0; i < undoStack.length; i++) {
-					trace("STACK[" + i.toString() + "]:" + undoStack[i]);
+				for (var i:uint = 0; i < _undoStack.length; i++) {
+					trace("STACK[" + i.toString() + "]:" + _undoStack[i]);
 				}
-				trace("NEXT:" + undoNext);
+				trace("NEXT:" + _undoNext);
 				trace("");
 			}
-
+			
+			////////// Getters and Setters //////////
+			public function get filename():String
+			{
+				return GonzoUtils.getFilenameFromPath(_fullPath);
+			}
+			
+			public function get fullPath():String
+			{
+				return _fullPath;
+			}
+			
+			public function set fullPath(value:String):void
+			{
+				_fullPath = value;
+			}
+			
+			public function get isModified():Boolean
+			{
+				return _isModified;
+			}
+			
+			public function set isModified(value:Boolean):void
+			{
+				_isModified = value;
+			}
+			
+			public function get updateInterval():uint
+			{
+				return _updateInterval;
+			}
+			
+			public function set updateInterval(value:uint):void
+			{
+				_updateInterval = value;
+			}
 		]]>
 	</fx:Script>
 </mx:TextArea>

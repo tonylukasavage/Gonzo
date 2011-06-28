@@ -5,8 +5,9 @@
 			   xmlns:gonzo="com.savagelook.Gonzo.*"
 			   xmlns:flexlib="http://code.google.com/p/flexlib/"
 			   minWidth="200" minHeight="200" width="800" height="600" 
-			   initialize="init();"
-			   creationComplete="initUI();"
+			   initialize="onInitialize();"
+			   creationComplete="onCreationComplete();"
+			   closing="onClosing(event)"
 			   skinClass="com.savagelook.Gonzo.skins.GonzoAppSkin">
 	<fx:Script>
 		<![CDATA[
@@ -15,11 +16,13 @@
 			import com.savagelook.Gonzo.GonzoUtils;
 			
 			import flexlib.controls.tabBarClasses.SuperTab;
+			import flexlib.events.SuperTabEvent;
 			
 			import mx.containers.VBox;
 			import mx.controls.Alert;
 			import mx.controls.ProgressBar;
 			import mx.events.CloseEvent;
+			import mx.events.IndexChangedEvent;
 			
 			[SkinPart(required="true", type="mx.controls.ProgressBar")]
 			public var progressBar:ProgressBar;
@@ -29,105 +32,150 @@
 			private static const APP_NAME:String = "Gonzo";
 			private static const EDITOR_WIDTH_MINIMUM:Number = 150;
 			public static const DEFAULT_FILENAME:String = "Untitled.md"
-			
-			public var currentMarkdownFile:String = "";
-			private var updateGonzoInterval:uint;
+	
 			private var htmlVerticalScrollPosition:Number = 0;
-			public var isEditorModified:Boolean = false;
 			
-			protected function init():void
+			private function onInitialize():void
 			{
-				// determine OS and setup menu
 				gonzoMenu.isWin = (Capabilities.os.toLowerCase().indexOf("windows") >= 0);
 				gonzoMenu.isMac = (Capabilities.os.toLowerCase().indexOf("mac os") >= 0);	
 				gonzoMenu.gonzo = this;	
 				GonzoUtils.DEFAULT_FILENAME = Gonzo.DEFAULT_FILENAME;
 			}
 			
-			protected function initUI():void {
-				// TODO check for recently loaded files, otherwise
-				SpellUI.enableSpelling(markdownEditor, "en_US");
+			private function onCreationComplete():void {
+				this.gonzoSeparator.addEventListener(GonzoSeparatorEvent.SEPARATOR_MOVED, this.onSeparatorMoved);
+				this.htmlRendered.addEventListener(Event.COMPLETE, this.onHtmlComplete);
+				this.editorTabNavigator.addEventListener(IndexChangedEvent.CHANGE, onEditorTabChange);
 				
-				// resize the markdown and html editors when the separator is moved
-				gonzoSeparator.addEventListener(GonzoSeparatorEvent.SEPARATOR_MOVED, function(event:GonzoSeparatorEvent):void {
-					if (event.stageX - mainGroupLayout.paddingLeft > EDITOR_WIDTH_MINIMUM &&
-						event.stageX < mainGroup.width - mainGroupLayout.paddingRight - EDITOR_WIDTH_MINIMUM) {
-						editorTabNavigator.width = event.stageX - 12;
-					}
-				});
-				
-				// update Gonzo whenever we type in the markdown or css editor
-				markdownEditor.addEventListener(Event.CHANGE, this.doEditorUpdate);
-				cssEditor.addEventListener(Event.CHANGE, this.doEditorUpdate);
-				
-				// maintain the vertical scroll position of the html preview
-				htmlRendered.addEventListener(Event.COMPLETE, function(e:Event):void {
-					(e.target as HTML).verticalScrollPosition = htmlVerticalScrollPosition;
-					progressBar.visible = false;
-				});
-				
-				this.updateGonzo(DEFAULT_FILENAME);
+				var editor:GonzoTextArea = this.createAndAddNewEditor(File.documentsDirectory.resolvePath(Gonzo.DEFAULT_FILENAME).nativePath);
+				this.updateGonzoWithEditor(editor);
+				editor.setFocus();
 			}
 			
-			private var markdownBuffer:String = "";
-			public function doEditorUpdate(e:Event):void {
-				this.isEditorModified = true;
-				clearInterval(updateGonzoInterval);
-				progressBar.visible = true;
-				updateGonzoInterval = setInterval(updateGonzo, 500);
+			protected function onClosing(event:Event):void
+			{
+				this.checkForUnsavedEditors(NativeApplication.nativeApplication.exit);
+				event.stopPropagation();
+				event.preventDefault();
 			}
-
-			public function updateGonzo(filename:String = ""):void {	
-				clearInterval(updateGonzoInterval);
-				
-				var markdown:String = this.markdownEditor.text;
-				var wordCount:uint = StringUtils.wordCount(markdown);
-				var rawHtml:String = Showdown.makeHtml(markdown);
+			
+			
+			////////// Event Handlers for editors, html, and separator //////////
+			private function onEditorTabChange(event:IndexChangedEvent):void {
+				var editor:GonzoTextArea = ((event.target as SuperTabNavigator).getChildAt(event.newIndex) as VBox).getChildByName("editor") as GonzoTextArea;
+				this.updateGonzoWithEditor(editor, editor.isModified);
+				editor.setFocus();
+			}
+			
+			private function onEditorChange(event:Event):void {
+				this.updateGonzoWithEditor(event.target as GonzoTextArea, true);
+			}
+			
+			private function onSeparatorMoved(event:GonzoSeparatorEvent):void {
+				if (event.stageX - mainGroupLayout.paddingLeft > EDITOR_WIDTH_MINIMUM &&
+					event.stageX < mainGroup.width - mainGroupLayout.paddingRight - EDITOR_WIDTH_MINIMUM) {
+					editorTabNavigator.width = event.stageX - 12;
+				}
+			}
+			
+			private function onHtmlComplete(event:Event):void {
+				(event.target as HTML).verticalScrollPosition = this.htmlVerticalScrollPosition;
+				progressBar.visible = false;
+			}
+			
+			private function onEditorComplete(event:Event):void {	
+				var editor:GonzoTextArea = event.target as GonzoTextArea;
+				var rawHtml:String = Showdown.makeHtml(editor.text);
 				var fullHtml:String = this.constructFullHtml(rawHtml);
 				
-				if (filename == "") {
-					filename = this.currentMarkdownFile == "" ? DEFAULT_FILENAME : this.currentMarkdownFile;
-				}
-				
-				this.markdownEditor.pushUndo(markdown);
-				this.cssEditor.pushUndo(this.cssEditor.text);
-				
-				this.htmlVerticalScrollPosition = this.htmlRendered.verticalScrollPosition;	
+				this.htmlVerticalScrollPosition = this.htmlRendered.verticalScrollPosition;
 				this.htmlRendered.htmlText = fullHtml;
-				this.htmlRaw.text = rawHtml;
-				this.statusText.text = "Word Count: " + wordCount.toString();
-				this.title = APP_NAME + " - " + filename + (this.isEditorModified ? "*" : "");
+				this.htmlRaw.text = rawHtml;				
+			}
+			////////// Event Handlers for editors, html, and separator //////////
+			
+			
+			////////// Helper Functions //////////
+			public function getCurrentEditor():GonzoTextArea {
+				var vbox:VBox = this.editorTabNavigator.selectedChild as VBox;
+				if (vbox != null) {
+					return vbox.getChildByName("editor") as GonzoTextArea;
+				} else {
+					return null;
+				}
 			}
 			
-			private function constructFullHtml(rawHtml:String):String {
+			private function constructFullHtml(rawHtml:String, css:String = ""):String {
 				const html1:String = "<html><head>";
 				const html2:String = "</head><body>";
 				const html3:String = "</body></html>";
 				
 				var html:String = html1;
-				if (cssEditor.text != "") {
-					html += "<style>" + cssEditor.text + "</style>";
+				if (css != "") {
+					html += "<style>" + css + "</style>";
 				}
 				html += html2 + rawHtml + html3;
 				
 				return html;
 			}
+			////////// Helper Functions //////////
 			
+			
+			public function updateGonzoWithEditor(editor:GonzoTextArea, isEditorModified:Boolean = false):void {
+				if (editor == null) {
+					// handle the case with no open editors
+					return;
+				}
+				
+				clearInterval(editor.updateInterval);
+				progressBar.visible = true;
+				editor.isModified = isEditorModified;
+				
+				var tab:VBox = editor.parent as VBox;
+				var wordCount:uint = StringUtils.wordCount(editor.text);
+				tab.label = editor.filename + (isEditorModified ? "*" : "");
+				this.title = APP_NAME + " - " + tab.label;
+				this.statusText.text = "Word Count: " + wordCount.toString();
+				
+				editor.updateInterval = setInterval(editor.updateEditor, 500);
+			}
+
 			public function checkForUnsavedEditors(command:Function):void {
-				if (!this.isEditorModified) {
+				var tabNavigator:SuperTabNavigator = this.editorTabNavigator;
+				var modifiedEditors:Vector.<GonzoTextArea> = new Vector.<GonzoTextArea>();
+				var modifiedList:String = "";
+				
+				// traverse list of editor tabs looking for ones that are modified
+				for (var i:uint = 0; i < tabNavigator.numChildren; i++) {
+					var child:Object = tabNavigator.getChildAt(i);
+					if (child is VBox) {
+						var editor:GonzoTextArea = (child as VBox).getChildByName("editor") as GonzoTextArea;
+						if (editor != null && editor.isModified) {
+							modifiedEditors.push(editor);
+							modifiedList += "        " + editor.fullPath + "\r";
+						}
+					}
+				}
+
+				if (modifiedEditors.length == 0) {
 					command();
 					return;
 				}
-
+				
 				Alert.show(
-					"'" + (this.currentMarkdownFile == "" ? DEFAULT_FILENAME : this.currentMarkdownFile) + "' has been modified.  Would you like to save it?",
+					"The following files have been modified. Would you like to save them?\r\n" + modifiedList,
 					"Save your changes?",
 					Alert.YES | Alert.NO | Alert.CANCEL,
 					this,
 					function(event:CloseEvent):void {
 						if (event.detail == Alert.YES) {
-							gonzoMenu.doFileSave();
-							command();
+							while (modifiedEditors.length > 0) {
+								var editor:GonzoTextArea = modifiedEditors.shift();
+								editor.setFocus();
+								gonzoMenu.doFileSave(editor);
+							}
+							callLater(command);
 						} else if (event.detail == Alert.NO) {
 							command();
 						} else if (event.detail == Alert.CANCEL) {
@@ -136,6 +184,40 @@
 					}
 				);
 			}
+			
+			public function createAndAddNewEditor(filename:String = DEFAULT_FILENAME):GonzoTextArea {
+				var vbox:VBox = new VBox();
+				vbox.label = GonzoUtils.getFilenameFromPath(filename);
+				
+				var editor:GonzoTextArea = new GonzoTextArea();
+				editor.name = "editor";
+				editor.fullPath = filename;
+				editor.percentHeight = 100;
+				editor.percentWidth = 100;
+				editor.setStyle("fontFamily", "Monaco");
+				editor.setStyle("fontSize", 16);
+				
+				vbox.addChild(editor);
+				editorTabNavigator.addChild(vbox);
+				editorTabNavigator.selectedIndex = editorTabNavigator.numChildren-1;
+				editor.addEventListener(Event.CHANGE, this.onEditorChange);
+				editor.addEventListener(Event.COMPLETE, this.onEditorComplete);
+				editor.setFocus();
+				
+				return editor;
+			}
+
+
+			protected function onEditorTabClose(event:SuperTabEvent):void {
+				var editor:GonzoTextArea = (this.editorTabNavigator.getChildAt(event.tabIndex) as VBox).getChildByName("editor") as GonzoTextArea;
+					
+				if (editor.isModified) {
+					event.stopPropagation();
+					event.preventDefault();
+					this.gonzoMenu.doFileClose();
+				} 	
+			}
+
 		]]>
 	</fx:Script>
 
@@ -143,9 +225,9 @@
 		<gonzo:GonzoNativeMenu id="gonzoMenu"/>
 	</s:menu>	
 	
-	<s:Group width="100%" height="100%" id="mainGroup">
+	<s:SkinnableContainer width="100%" height="100%" id="mainGroup">
 		<s:layout>
-			<s:HorizontalLayout gap="0" paddingLeft="10" paddingRight="10" paddingTop="10" paddingBottom="10" id="mainGroupLayout" verticalAlign="bottom"/>
+			<s:HorizontalLayout gap="0" paddingLeft="10" paddingRight="10" paddingTop="7" paddingBottom="10" id="mainGroupLayout" verticalAlign="bottom"/>
 		</s:layout>
 		
 		<flexlib:SuperTabNavigator id="editorTabNavigator"
@@ -153,29 +235,28 @@
 								   stopScrollingEvent="{MouseEvent.MOUSE_UP}"
 								   startScrollingEvent="{MouseEvent.MOUSE_DOWN}"
 								   width="100%"
-								   height="100%"
+								   height="99%"
 								   horizontalGap="0"
 								   paddingTop="0"
 								   paddingBottom="0"
+								   backgroundColor="0xbbbbbb"
 								   closePolicy="{SuperTab.CLOSE_ROLLOVER}"
+								   tabClose="onEditorTabClose(event)"
 								   creationPolicy="all">
-			<mx:VBox label="markdown">
-				<gonzo:GonzoTextArea id="markdownEditor" height="100%" width="100%" fontFamily="Monaco" fontSize="16"/>	
-			</mx:VBox>
-			<mx:VBox label="css" id="cssEditorTab">
-				<gonzo:GonzoTextArea id="cssEditor" height="100%" width="100%" fontFamily="Monaco" fontSize="16"/>
-			</mx:VBox>	
 		</flexlib:SuperTabNavigator>
 		
 		<gonzo:GonzoSeparator id="gonzoSeparator" height="{editorTabNavigator.height}"/>
 		
-		<mx:TabNavigator id="previewTabNavigator" width="100%" height="100%" creationPolicy="all" borderStyle="solid" paddingTop="0" paddingBottom="0">
+		<mx:TabNavigator id="previewTabNavigator" width="100%" height="99%" creationPolicy="all" borderStyle="solid" paddingTop="0" paddingBottom="0">
 			<mx:VBox label="preview">
 				<mx:HTML id="htmlRendered" height="100%" width="100%" borderStyle="solid"/>	
 			</mx:VBox>
 			<mx:VBox label="html">
 				<s:TextArea id="htmlRaw" height="100%" width="100%" editable="false" fontFamily="Monaco" fontSize="16"/>
-			</mx:VBox>		
+			</mx:VBox>	
+			<mx:VBox label="css" id="cssEditorTab">
+				<gonzo:GonzoTextArea id="cssEditor" height="100%" width="100%" fontFamily="Monaco" fontSize="16"/>
+			</mx:VBox>
 		</mx:TabNavigator>
-	</s:Group>
+	</s:SkinnableContainer>
 </s:WindowedApplication>
