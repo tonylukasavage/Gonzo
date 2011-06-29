@@ -49,6 +49,8 @@
 				this.editorTabNavigator.addEventListener(IndexChangedEvent.CHANGE, onEditorTabChange);
 				
 				var editor:GonzoTextArea = this.createAndAddNewEditor(File.documentsDirectory.resolvePath(Gonzo.DEFAULT_FILENAME).nativePath);
+				editor.isReference = true;
+				//editor.editable = false;
 				this.updateGonzoWithEditor(editor);
 				editor.setFocus();
 			}
@@ -124,7 +126,11 @@
 			
 			public function updateGonzoWithEditor(editor:GonzoTextArea, isEditorModified:Boolean = false):void {
 				if (editor == null) {
-					// handle the case with no open editors
+					this.title = APP_NAME;
+					this.statusText.text = "Word Count: 0";
+					this.htmlVerticalScrollPosition = 0;
+					this.htmlRendered.htmlText = "";
+					this.htmlRaw.text = "";
 					return;
 				}
 				
@@ -216,6 +222,7 @@
 					event.preventDefault();
 					this.gonzoMenu.doFileClose();
 				} 	
+				this.updateGonzoWithEditor(null);
 			}
 
 		]]>

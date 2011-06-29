@@ -20,6 +20,7 @@
 			private var _fullPath:String;
 			private var _isModified:Boolean = false;
 			private var _updateInterval:uint;
+			private var _isReference:Boolean = false;
 			
 			protected function onCreationComplete(event:FlexEvent):void
 			{
@@ -77,6 +78,16 @@
 			}
 			
 			////////// Getters and Setters //////////
+			public function get isReference():Boolean
+			{
+				return _isReference;
+			}
+			
+			public function set isReference(value:Boolean):void
+			{
+				_isReference = value;
+			}
+			
 			public function get filename():String
 			{
 				return GonzoUtils.getFilenameFromPath(_fullPath);

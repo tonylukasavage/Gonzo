@@ -137,17 +137,19 @@
 						function(event:CloseEvent):void {
 							if (event.detail == Alert.YES) {
 								gonzo.gonzoMenu.doFileSave(editor);
-								gonzo.editorTabNavigator.removeChild(editor.parent);
-								editor = null;
-							} else if (event.detail == Alert.NO) {
-								gonzo.editorTabNavigator.removeChild(editor.parent);
-								editor = null;
 							} else if (event.detail == Alert.CANCEL) {
 								return;
 							}	
+							gonzo.editorTabNavigator.removeChild(editor.parent);
+							editor = null;
+							gonzo.updateGonzoWithEditor(gonzo.getCurrentEditor());
 						}
 					);
-				} 
+				} else {
+					gonzo.editorTabNavigator.removeChild(editor.parent);
+					editor = null;
+					gonzo.updateGonzoWithEditor(gonzo.getCurrentEditor());
+				}
 			}
 			
 			private function doEditUndo():void {
@@ -188,7 +190,10 @@
 				} else if (id == "file_close") {
 					this.doFileClose();	
 				} else if (id == "file_closeAll") {
-					gonzo.checkForUnsavedEditors(gonzo.editorTabNavigator.removeAll);
+					gonzo.checkForUnsavedEditors(function():void {
+						gonzo.editorTabNavigator.removeAll();
+						gonzo.updateGonzoWithEditor(null);
+					});
 				}  else if (id == "file_export_html") {
 					this.doFileExportHtml();
 				} else if (id == "file_exit") {
