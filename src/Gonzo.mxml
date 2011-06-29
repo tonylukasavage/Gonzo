@@ -47,12 +47,6 @@
 				this.gonzoSeparator.addEventListener(GonzoSeparatorEvent.SEPARATOR_MOVED, this.onSeparatorMoved);
 				this.htmlRendered.addEventListener(Event.COMPLETE, this.onHtmlComplete);
 				this.editorTabNavigator.addEventListener(IndexChangedEvent.CHANGE, onEditorTabChange);
-				
-				var editor:GonzoTextArea = this.createAndAddNewEditor(File.documentsDirectory.resolvePath(Gonzo.DEFAULT_FILENAME).nativePath);
-				editor.isReference = true;
-				//editor.editable = false;
-				this.updateGonzoWithEditor(editor);
-				editor.setFocus();
 			}
 			
 			protected function onClosing(event:Event):void
@@ -94,6 +88,21 @@
 				this.htmlVerticalScrollPosition = this.htmlRendered.verticalScrollPosition;
 				this.htmlRendered.htmlText = fullHtml;
 				this.htmlRaw.text = rawHtml;				
+			}
+			
+			protected function onEditorTabClose(event:SuperTabEvent):void {
+				var editor:GonzoTextArea = (this.editorTabNavigator.getChildAt(event.tabIndex) as VBox).getChildByName("editor") as GonzoTextArea;
+				
+				if (editor.isModified) {
+					event.stopPropagation();
+					event.preventDefault();
+					this.gonzoMenu.doFileClose();
+				} 	
+				
+				callLater(function():void {
+					var e:GonzoTextArea = getCurrentEditor();
+					updateGonzoWithEditor(e, (e == null ? false : e.isModified));
+				});
 			}
 			////////// Event Handlers for editors, html, and separator //////////
 			
@@ -140,7 +149,7 @@
 				
 				var tab:VBox = editor.parent as VBox;
 				var wordCount:uint = StringUtils.wordCount(editor.text);
-				tab.label = editor.filename + (isEditorModified ? "*" : "");
+				tab.label = (editor.isReference ? "cheat sheet" : editor.filename) + (isEditorModified ? "*" : "");
 				this.title = APP_NAME + " - " + tab.label;
 				this.statusText.text = "Word Count: " + wordCount.toString();
 				
@@ -211,18 +220,6 @@
 				editor.setFocus();
 				
 				return editor;
-			}
-
-
-			protected function onEditorTabClose(event:SuperTabEvent):void {
-				var editor:GonzoTextArea = (this.editorTabNavigator.getChildAt(event.tabIndex) as VBox).getChildByName("editor") as GonzoTextArea;
-					
-				if (editor.isModified) {
-					event.stopPropagation();
-					event.preventDefault();
-					this.gonzoMenu.doFileClose();
-				} 	
-				this.updateGonzoWithEditor(null);
 			}
 
 		]]>

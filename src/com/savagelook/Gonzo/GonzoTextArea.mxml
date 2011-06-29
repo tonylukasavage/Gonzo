@@ -39,7 +39,9 @@
 			
 			public function updateEditor():void {
 				clearInterval(this.updateInterval);
-				this.pushUndo(this.text);
+				if (!this.isReference) {
+					this.pushUndo(this.text);
+				}
 				this.dispatchEvent(new Event(Event.COMPLETE));	
 			}
 			

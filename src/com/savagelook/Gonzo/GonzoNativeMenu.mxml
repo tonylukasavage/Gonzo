@@ -34,6 +34,8 @@
 					<menuitem label="Paste" keyEquivalent="v" controlKey="true" id="edit_paste"/>
 					<menuitem type="separator"/>
 					<menuitem label="Select All" keyEquivalent="a" controlKey="true" id="edit_selectAll"/>
+					<menuitem type="separator"/>
+					<menuitem label="Find..." keyEquivalent="f" controlKey="true" id="edit_find" enabled="false"/>
 				</menuitem>
 				<menuitem label="Format">
 					<menuitem label="Word Wrap" id="format_wordWrap" type="check" toggled="true"/>
@@ -42,7 +44,9 @@
 					<menuitem label="Show Preview" id="window_preview" type="check" toggled="true" keyEquivalent="p" controlKey="true"/>
 				</menuitem>
 				<menuitem label="Help">
-					<menuitem label="Tutorial" id="help_tutorial" keyEquivalent="t" controlKey="true" shiftKey="true"/>
+					<menuitem label="Cheat Sheet" id="help_tutorial" keyEquivalent="t" controlKey="true" shiftKey="true"/>
+					<menuitem type="separator"/>
+					<menuitem label="About Gonzo..." id="help_about" enabled="false"/>
 				</menuitem>
 			</root>
 		</fx:XML>	
@@ -82,21 +86,22 @@
 			}
 			
 			private function doFileSaveAs():void {
-				var file:File = File.documentsDirectory;
+				var file:File;
 				var editor:GonzoTextArea = gonzo.getCurrentEditor();
 				
 				if (editor == null) {
 					return;
 				}
 				
-				file.addEventListener(Event.COMPLETE, function(event:Event):void {
-					var savedFile:File = event.target as File;
+				file = new File(editor.fullPath);
+				file.addEventListener(Event.SELECT, function(event:Event):void {
+					var saveFile:File = event.target as File;
+					GonzoUtils.writeStringToFilename(saveFile.nativePath, GonzoUtils.stripNonPrintableCharacters(editor.text));
 					editor.isModified = false;
-					editor.fullPath = savedFile.nativePath;
+					editor.fullPath = saveFile.nativePath;
 					gonzo.updateGonzoWithEditor(editor, false);
 				});
-				
-				file.save(GonzoUtils.stripNonPrintableCharacters(editor.text), editor.filename);
+				file.browseForSave("Save file as...");
 			}
 			
 			public function doFileSave(editor:GonzoTextArea = null):void {
@@ -119,6 +124,10 @@
 				}
 				
 				var file:File = File.documentsDirectory.resolvePath(editor.filename + ".html");
+				file.addEventListener(Event.SELECT, function(event:Event):void {
+					var saveFile:File = event.target as File;
+					GonzoUtils.writeStringToFilename(saveFile.nativePath, gonzo.htmlRaw.text);
+				});
 				file.browseForSave("Export as HTML");
 			}
 			
@@ -141,14 +150,18 @@
 								return;
 							}	
 							gonzo.editorTabNavigator.removeChild(editor.parent);
-							editor = null;
-							gonzo.updateGonzoWithEditor(gonzo.getCurrentEditor());
+							gonzo.callLater(function():void {
+								editor = gonzo.getCurrentEditor();
+								gonzo.updateGonzoWithEditor(editor, (editor == null ? false : editor.isModified));
+							});
 						}
 					);
 				} else {
 					gonzo.editorTabNavigator.removeChild(editor.parent);
-					editor = null;
-					gonzo.updateGonzoWithEditor(gonzo.getCurrentEditor());
+					gonzo.callLater(function():void {
+						editor = gonzo.getCurrentEditor();
+						gonzo.updateGonzoWithEditor(editor, (editor == null ? false : editor.isModified));
+					});
 				}
 			}
 			
@@ -178,6 +191,9 @@
 			{
 				var node:XML = event.item as XML;
 				var id:String = node.@id;
+				var i:uint;
+				var vbox:VBox;
+				var editor:GonzoTextArea;
 			
 				if (id == "file_new") {
 					doFileNew();
@@ -221,11 +237,26 @@
 					}
 				} else if (id == "format_wordWrap") {
 					var doWrap:Boolean = node.@toggled == "true";
-					for (var i:uint = 0; i < gonzo.editorTabNavigator.numChildren; i++) {
-						var vbox:VBox = gonzo.editorTabNavigator.getChildAt(i) as VBox;
-						var editor:GonzoTextArea = vbox.getChildByName("editor") as GonzoTextArea;
+					for (i = 0; i < gonzo.editorTabNavigator.numChildren; i++) {
+						vbox = gonzo.editorTabNavigator.getChildAt(i) as VBox;
+						editor = vbox.getChildByName("editor") as GonzoTextArea;
 						editor.wordWrap = doWrap;
 					}
+				} else if (id == "help_tutorial") {
+					for (i = 0; i < gonzo.editorTabNavigator.numChildren; i++) {
+						vbox = gonzo.editorTabNavigator.getChildAt(i) as VBox;
+						editor = vbox.getChildByName("editor") as GonzoTextArea;
+						if (editor.isReference) {
+							gonzo.editorTabNavigator.selectedIndex = i;
+							return;
+						}
+					}
+					
+					editor = gonzo.createAndAddNewEditor(File.documentsDirectory.resolvePath(Gonzo.DEFAULT_FILENAME).nativePath);
+					editor.isReference = true;
+					editor.text = GonzoUtils.readStringFromFilename(File.applicationDirectory.nativePath + "/assets/cheat_sheet.md");
+					gonzo.updateGonzoWithEditor(editor);
+					editor.editable = false;
 				} else {
 					trace(event.label + "(" + id + ")");
 				}
