@@ -13,7 +13,7 @@
 			import mx.events.FlexEvent;
 			use namespace mx_internal;
 			
-			private static const UNDO_BUFFER_SIZE:uint = 20;
+			private static const UNDO_BUFFER_SIZE:uint = 30;
 			
 			private var _undoStack:Vector.<String> = new Vector.<String>();
 			private var _undoNext:String = null;

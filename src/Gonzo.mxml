@@ -31,8 +31,8 @@
 			private static const postHtml:String = "</body></html>";
 			private static const APP_NAME:String = "Gonzo";
 			private static const EDITOR_WIDTH_MINIMUM:Number = 150;
-			public static const DEFAULT_FILENAME:String = "Untitled.md"
-	
+			public static const DEFAULT_FILENAME:String = "Untitled.md";
+
 			private var htmlVerticalScrollPosition:Number = 0;
 			
 			private function onInitialize():void
@@ -65,7 +65,8 @@
 			}
 			
 			private function onEditorChange(event:Event):void {
-				this.updateGonzoWithEditor(event.target as GonzoTextArea, true);
+				var editor:GonzoTextArea = event.target as GonzoTextArea;
+				this.updateGonzoWithEditor(editor, true);
 			}
 			
 			private function onSeparatorMoved(event:GonzoSeparatorEvent):void {

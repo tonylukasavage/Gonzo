@@ -27,7 +27,7 @@
 					<menuitem label="Quit" keyEquivalent="q" controlKey="true" id="file_exit"/>
 				</menuitem>
 				<menuitem label="Edit">
-					<menuitem label="Undo" keyEquivalent="z" controlKey="true" id="edit_undo" enabled="false"/>
+					<menuitem label="Undo" keyEquivalent="z" controlKey="true" id="edit_undo" />
 					<menuitem type="separator"/>
 					<menuitem label="Cut" keyEquivalent="x" controlKey="true" id="edit_cut"/>
 					<menuitem label="Copy" keyEquivalent="c" controlKey="true" id="edit_copy"/>
@@ -166,25 +166,17 @@
 			}
 			
 			private function doEditUndo():void {
-//				var editor:GonzoTextArea = gonzo.getCurrentEditor();
-//				
-//				if (editor == null) {
-//					return;
-//				}
-//				
-//				var label:String = gonzo.editorTabNavigator.selectedChild.label;
-//				var editor:GonzoTextArea;
-//				if (label == "markdown") {
-//				//	editor = gonzo.markdownEditor;
-//				} else if (label == "css") {
-//					editor = gonzo.cssEditor;
-//				}
-//				
-//				var undo:String = editor.popUndo();
-//				if (undo != null) {
-//					editor.text = undo;
-//					gonzo.updateGonzoWithEditor(editor, true);
-//				}
+				var editor:GonzoTextArea = gonzo.getCurrentEditor();
+				
+				if (editor == null) {
+					return;
+				}
+				
+				var buffer:String = editor.popUndo();
+				if (buffer != null) {
+					editor.text = buffer;
+					gonzo.updateGonzoWithEditor(editor, true);
+				}
 			}
 
 			protected function gonzoItemClickHandler(event:FlexNativeMenuEvent):void
