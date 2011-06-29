@@ -37,6 +37,25 @@
 					<menuitem type="separator"/>
 					<menuitem label="Find..." keyEquivalent="f" controlKey="true" id="edit_find" enabled="false"/>
 				</menuitem>
+				<menuitem label="Markdown">
+					<menuitem label="Heading" enabled="false">
+						<menuitem label="H1" keyEquivalent="1" controlKey="true" id="markdown_heading1" />
+						<menuitem label="H" keyEquivalent="2" controlKey="true" id="markdown_heading2" />
+						<menuitem label="H3" keyEquivalent="3" controlKey="true" id="markdown_heading3" />
+						<menuitem label="H4" keyEquivalent="4" controlKey="true" id="markdown_heading4" />
+						<menuitem label="H5" keyEquivalent="5" controlKey="true" id="markdown_heading5" />
+						<menuitem label="H6" keyEquivalent="6" controlKey="true" id="markdown_heading6" />
+					</menuitem>
+					<menuitem label="Horizontal Rule" keyEquivalent="r" controlKey="true" id="markdown_hr" enabled="false"/>
+					<menuitem label="Blockquote" keyEquivalent="u" controlKey="true" id="markdown_blockquote" enabled="false"/>
+					<menuitem label="Code (block)" keyEquivalent="d" controlKey="true" shiftKey="true" id="markdown_codeBlock" enabled="false"/>
+					<menuitem type="separator"/>
+					<menuitem label="Link..." keyEquivalent="l" controlKey="true" id="markdown_link" enabled="false"/>
+					<menuitem label="Image..." keyEquivalent="i" controlKey="true" id="markdown_image" enabled="false"/>
+					<menuitem label="Emphasize" keyEquivalent="e" controlKey="true" id="markdown_em" enabled="false"/>
+					<menuitem label="Strong" keyEquivalent="b" controlKey="true" id="markdown_strong" enabled="false"/>
+					<menuitem label="Code (inline)" keyEquivalent="d" controlKey="true" id="markdown_codeInline" enabled="false"/>
+				</menuitem>
 				<menuitem label="Format">
 					<menuitem label="Word Wrap" id="format_wordWrap" type="check" toggled="true"/>
 				</menuitem>

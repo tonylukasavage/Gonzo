@@ -230,38 +230,57 @@
 		<gonzo:GonzoNativeMenu id="gonzoMenu"/>
 	</s:menu>	
 	
-	<s:SkinnableContainer width="100%" height="100%" id="mainGroup">
+	<s:SkinnableContainer width="100%" height="100%" id="topGroup">
 		<s:layout>
-			<s:HorizontalLayout gap="0" paddingLeft="10" paddingRight="10" paddingTop="7" paddingBottom="10" id="mainGroupLayout" verticalAlign="bottom"/>
+			<s:VerticalLayout gap="0" horizontalAlign="center"/>
 		</s:layout>
-		
-		<flexlib:SuperTabNavigator id="editorTabNavigator"
-								   scrollSpeed="25"
-								   stopScrollingEvent="{MouseEvent.MOUSE_UP}"
-								   startScrollingEvent="{MouseEvent.MOUSE_DOWN}"
-								   width="100%"
-								   height="99%"
-								   horizontalGap="0"
-								   paddingTop="0"
-								   paddingBottom="0"
-								   backgroundColor="0xbbbbbb"
-								   closePolicy="{SuperTab.CLOSE_ROLLOVER}"
-								   tabClose="onEditorTabClose(event)"
-								   creationPolicy="all">
-		</flexlib:SuperTabNavigator>
-		
-		<gonzo:GonzoSeparator id="gonzoSeparator" height="{editorTabNavigator.height}"/>
-		
-		<mx:TabNavigator id="previewTabNavigator" width="100%" height="99%" creationPolicy="all" borderStyle="solid" paddingTop="0" paddingBottom="0">
-			<mx:VBox label="preview">
-				<mx:HTML id="htmlRendered" height="100%" width="100%" borderStyle="solid"/>	
-			</mx:VBox>
-			<mx:VBox label="html">
-				<s:TextArea id="htmlRaw" height="100%" width="100%" editable="false" fontFamily="Monaco" fontSize="16"/>
-			</mx:VBox>	
-			<mx:VBox label="css" id="cssEditorTab">
-				<gonzo:GonzoTextArea id="cssEditor" height="100%" width="100%" fontFamily="Monaco" fontSize="16"/>
-			</mx:VBox>
-		</mx:TabNavigator>
+		<!--
+		<s:ButtonBar>
+			<mx:ArrayCollection>
+				<fx:String>H1</fx:String>
+				<fx:String>H2</fx:String>
+				<fx:String>H3</fx:String>
+				<fx:String>H4</fx:String>
+				<fx:String>H5</fx:String>
+				<fx:String>H6</fx:String>
+				<fx:String>&lt;em&gt;</fx:String>
+				<fx:String>&lt;strong&gt;</fx:String>
+			</mx:ArrayCollection>
+		</s:ButtonBar>
+		-->
+		<s:SkinnableContainer width="100%" height="100%" id="mainGroup">
+			<s:layout>
+				<s:HorizontalLayout gap="0" paddingLeft="10" paddingRight="10" paddingTop="7" paddingBottom="10" id="mainGroupLayout" verticalAlign="bottom"/>
+			</s:layout>
+			
+			<flexlib:SuperTabNavigator id="editorTabNavigator"
+									   scrollSpeed="25"
+									   stopScrollingEvent="{MouseEvent.MOUSE_UP}"
+									   startScrollingEvent="{MouseEvent.MOUSE_DOWN}"
+									   width="100%"
+									   height="99%"
+									   horizontalGap="0"
+									   paddingTop="0"
+									   paddingBottom="0"
+									   backgroundColor="0xbbbbbb"
+									   closePolicy="{SuperTab.CLOSE_ROLLOVER}"
+									   tabClose="onEditorTabClose(event)"
+									   creationPolicy="all">
+			</flexlib:SuperTabNavigator>
+			
+			<gonzo:GonzoSeparator id="gonzoSeparator" height="{editorTabNavigator.height}"/>
+			
+			<mx:TabNavigator id="previewTabNavigator" width="100%" height="99%" creationPolicy="all" borderStyle="solid" paddingTop="0" paddingBottom="0">
+				<mx:VBox label="preview">
+					<mx:HTML id="htmlRendered" height="100%" width="100%" borderStyle="solid"/>	
+				</mx:VBox>
+				<mx:VBox label="html">
+					<s:TextArea id="htmlRaw" height="100%" width="100%" editable="false" fontFamily="Monaco" fontSize="16"/>
+				</mx:VBox>	
+				<mx:VBox label="css" id="cssEditorTab">
+					<gonzo:GonzoTextArea id="cssEditor" height="100%" width="100%" fontFamily="Monaco" fontSize="16"/>
+				</mx:VBox>
+			</mx:TabNavigator>
+		</s:SkinnableContainer>
 	</s:SkinnableContainer>
 </s:WindowedApplication>
