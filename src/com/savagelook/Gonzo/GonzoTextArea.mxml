@@ -75,6 +75,8 @@
 				this.validateNow();
 				range = new TextRange(this, true);
 				range.text = shiftChunk;
+				
+				this.dispatchEvent(new Event(Event.CHANGE));
 			}
 			
 			public function shiftRight():void {
