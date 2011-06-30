@@ -59,6 +59,9 @@
 				</menuitem>
 				<menuitem label="Format">
 					<menuitem label="Word Wrap" id="format_wordWrap" type="check" toggled="true"/>
+					<menuitem type="separator"/>
+					<menuitem label="Shift Right" keyEquivalent="Left" controlKey="true" id="format_shiftRight"/>
+					<menuitem label="Shift Left" id="format_shiftLeft"/>
 				</menuitem>
 				<menuitem label="Window">
 					<menuitem label="Show Preview" id="window_preview" type="check" toggled="true" keyEquivalent="p" controlKey="true"/>
@@ -104,6 +107,11 @@
 					gonzo.updateGonzoWithEditor(editor);
 				});
 				file.browseForOpen("Open a markdown file");
+			}
+			
+			function replace(org:String, fnd:String, rpl:String):String 
+			{
+				return org.split(fnd).join(rpl);
 			}
 			
 			private function doFileSaveAs():void {
@@ -199,7 +207,7 @@
 					gonzo.updateGonzoWithEditor(editor, true);
 				}
 			}
-
+			
 			protected function gonzoItemClickHandler(event:FlexNativeMenuEvent):void
 			{
 				var node:XML = event.item as XML;
@@ -240,6 +248,13 @@
 					NativeApplication.nativeApplication.paste();
 				} else if (id == "edit_selectAll") { 
 					NativeApplication.nativeApplication.selectAll();
+				} else if (id == "format_shiftRight") {
+					editor = gonzo.getCurrentEditor();
+					if (editor == null) {
+						return;
+					}
+					editor.shiftRight();
+				} else if (id == "format_shiftLeft") {
 				} else if (id == "window_preview") {
 					if (node.@toggled == "true") {
 						gonzo.gonzoSeparator.visible = gonzo.gonzoSeparator.includeInLayout = true;

@@ -9,6 +9,7 @@
 		<![CDATA[
 			import com.adobe.linguistics.spelling.SpellUI;
 			
+			import mx.controls.textClasses.TextRange;
 			import mx.core.mx_internal;
 			import mx.events.FlexEvent;
 			use namespace mx_internal;
@@ -23,14 +24,38 @@
 			private var _isReference:Boolean = false;
 			
 			protected function onCreationComplete(event:FlexEvent):void
-			{
+			{				
 				SpellUI.enableSpelling(this, "en_US");
 			}
 			
 			protected function onKeyFocusChange(event:FocusEvent):void
 			{
 				event.preventDefault();
-				this.textField.replaceSelectedText("\t");
+				var range:TextRange = new TextRange(this, true);
+				if (range.beginIndex != range.endIndex) {
+					this.shiftRight();
+				} else {
+					this.textField.replaceSelectedText("\t");
+				}
+			}
+			
+			public function shiftRight():void {
+				var tmp:int;
+				var range:TextRange = new TextRange(this, true);
+				var beginChunk:int = ((tmp = this.text.substring(0, range.beginIndex > 0 ? range.beginIndex : 0).lastIndexOf("\r")) == -1 ? 0 : tmp+1);
+				var endChunk:int = ((tmp = this.text.substring(range.endIndex).indexOf("\r")) == -1 ? this.text.length : tmp + range.endIndex);
+				var shiftChunk:String = this.text.substring(beginChunk, endChunk);
+				
+				var lines:Array = shiftChunk.split("\r");
+				shiftChunk = "";
+				for (var i:uint = 0; i < lines.length; i++) {
+					shiftChunk += "\t" + lines[i] + (i+1 == lines.length ? "" : "\n");
+				}
+				
+				this.setSelection(beginChunk, endChunk);
+				this.validateNow();
+				range = new TextRange(this, true);
+				range.text = shiftChunk;
 			}
 			
 			public function getCaretIndex():int {
