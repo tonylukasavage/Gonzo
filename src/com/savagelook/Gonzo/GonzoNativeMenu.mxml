@@ -52,9 +52,9 @@
 					<menuitem type="separator"/>
 					<menuitem label="Link..." keyEquivalent="l" controlKey="true" id="markdown_link" enabled="false"/>
 					<menuitem label="Image..." keyEquivalent="i" controlKey="true" id="markdown_image" enabled="false"/>
-					<menuitem label="Emphasize" keyEquivalent="e" controlKey="true" id="markdown_em" enabled="false"/>
-					<menuitem label="Strong" keyEquivalent="b" controlKey="true" id="markdown_strong" enabled="false"/>
-					<menuitem label="Code (inline)" keyEquivalent="d" controlKey="true" id="markdown_codeInline" enabled="false"/>
+					<menuitem label="Emphasis" keyEquivalent="e" controlKey="true" id="markdown_em"/>
+					<menuitem label="Strong" keyEquivalent="b" controlKey="true" id="markdown_strong"/>
+					<menuitem label="Code (inline)" keyEquivalent="d" controlKey="true" id="markdown_codeInline"/>
 				</menuitem>
 				<menuitem label="Format">
 					<menuitem label="Word Wrap" id="format_wordWrap" type="check" toggled="true"/>
@@ -74,6 +74,7 @@
 		<![CDATA[
 			import mx.containers.VBox;
 			import mx.controls.Alert;
+			import mx.controls.textClasses.TextRange;
 			import mx.events.CloseEvent;
 			import mx.events.FlexNativeMenuEvent;
 			import mx.managers.PopUpManager;
@@ -205,6 +206,7 @@
 				var i:uint;
 				var vbox:VBox;
 				var editor:GonzoTextArea;
+				var range:TextRange;
 			
 				if (id == "file_new") {
 					doFileNew();
@@ -268,19 +270,30 @@
 					editor.text = GonzoUtils.readStringFromFilename(File.applicationDirectory.nativePath + "/assets/cheat_sheet.md");
 					gonzo.updateGonzoWithEditor(editor);
 					editor.editable = false;
+				} else if (id == "markdown_em") {
+					this.wrapCurrentEditorTextRange("_");
+				} else if (id == "markdown_strong") {
+					this.wrapCurrentEditorTextRange("**");
+				} else if (id == "markdown_codeInline") {
+					this.wrapCurrentEditorTextRange("`");
 				} else {
 					trace(event.label + "(" + id + ")");
 				}
 			}
 			
-			/**
-			 * Handles key strokes in a platform specific way.  CTRL == CTRL on Windows,
-			 * CTRL == COMMAND on Mac.
-			 * 
-			 * @param item An object that holds the menu entry for the keyEquivalent modifier
-			 * 
-			 * @return An array containing the modified keys pressed
-			 */
+			private function wrapCurrentEditorTextRange(wrapper:String):void {
+				var editor:GonzoTextArea = gonzo.getCurrentEditor();
+				if (editor == null) {
+					return;
+				}
+				var range:TextRange = new TextRange(editor, true);
+				if (range.text.length == 0) {
+					return;
+				}
+				range.text = wrapper + range.text + wrapper;
+				gonzo.updateGonzoWithEditor(editor, true);
+			}
+			
 			private function keyEquivalentModifiers(item:Object):Array
 			{
 				var result:Array = new Array();
