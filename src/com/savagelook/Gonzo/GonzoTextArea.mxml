@@ -15,6 +15,8 @@
 			use namespace mx_internal;
 			
 			private static const UNDO_BUFFER_SIZE:uint = 30;
+			private static const SHIFT_DIRECTION_LEFT:String = "LEFT";
+			private static const SHIFT_DIRECTION_RIGHT:String = "RIGHT";
 			
 			private var _undoStack:Vector.<String> = new Vector.<String>();
 			private var _undoNext:String = null;
@@ -33,29 +35,54 @@
 				event.preventDefault();
 				var range:TextRange = new TextRange(this, true);
 				if (range.beginIndex != range.endIndex) {
-					this.shiftRight();
+					if (event.shiftKey) {
+						this.shiftLeft();
+					} else {
+						this.shiftRight();
+					}
 				} else {
-					this.textField.replaceSelectedText("\t");
+					this.textField.replaceSelectedText("    ");
 				}
 			}
 			
-			public function shiftRight():void {
+			private function getCurrentShiftChunk():String {
+				var tmp:int;
+				var range:TextRange = new TextRange(this, true);
+				var beginChunk:int = ((tmp = this.text.substring(0, range.beginIndex > 0 ? range.beginIndex : 0).lastIndexOf("\r")) == -1 ? 0 : tmp+1);
+				var endChunk:int = ((tmp = this.text.substring(range.endIndex).indexOf("\r")) == -1 ? this.text.length : tmp + range.endIndex);
+				return this.text.substring(beginChunk, endChunk);
+			}
+			
+			private function _shiftText(direction:String):void {
 				var tmp:int;
 				var range:TextRange = new TextRange(this, true);
 				var beginChunk:int = ((tmp = this.text.substring(0, range.beginIndex > 0 ? range.beginIndex : 0).lastIndexOf("\r")) == -1 ? 0 : tmp+1);
 				var endChunk:int = ((tmp = this.text.substring(range.endIndex).indexOf("\r")) == -1 ? this.text.length : tmp + range.endIndex);
 				var shiftChunk:String = this.text.substring(beginChunk, endChunk);
-				
 				var lines:Array = shiftChunk.split("\r");
+				var pattern:RegExp = /^\s{1,4}/;
+				
 				shiftChunk = "";
 				for (var i:uint = 0; i < lines.length; i++) {
-					shiftChunk += "\t" + lines[i] + (i+1 == lines.length ? "" : "\n");
+					if (direction == GonzoTextArea.SHIFT_DIRECTION_LEFT) {
+						shiftChunk += lines[i].replace(pattern, "") + (i+1 == lines.length ? "" : "\n");
+					} else if (direction == GonzoTextArea.SHIFT_DIRECTION_RIGHT) {
+						shiftChunk += "    " + lines[i] + (i+1 == lines.length ? "" : "\n");
+					}
 				}
 				
 				this.setSelection(beginChunk, endChunk);
 				this.validateNow();
 				range = new TextRange(this, true);
 				range.text = shiftChunk;
+			}
+			
+			public function shiftRight():void {
+				_shiftText(GonzoTextArea.SHIFT_DIRECTION_RIGHT);
+			}
+			
+			public function shiftLeft():void {
+				_shiftText(GonzoTextArea.SHIFT_DIRECTION_LEFT);
 			}
 			
 			public function getCaretIndex():int {
