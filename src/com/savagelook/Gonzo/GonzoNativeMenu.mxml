@@ -50,8 +50,9 @@
 					<menuitem label="Blockquote" keyEquivalent="u" controlKey="true" id="markdown_blockquote" enabled="false"/>
 					<menuitem label="Code (block)" keyEquivalent="d" controlKey="true" shiftKey="true" id="markdown_codeBlock" enabled="false"/>
 					<menuitem type="separator"/>
-					<menuitem label="Link..." keyEquivalent="l" controlKey="true" id="markdown_link" enabled="false"/>
-					<menuitem label="Image..." keyEquivalent="i" controlKey="true" id="markdown_image" enabled="false"/>
+					<menuitem label="Link..." keyEquivalent="l" controlKey="true" shiftKey="true" id="markdown_linkReference"/>
+					<menuitem label="Link (inline)" keyEquivalent="l" controlKey="true" id="markdown_link" />
+					<menuitem label="Image..." keyEquivalent="i" controlKey="true" id="markdown_image" />
 					<menuitem label="Emphasis" keyEquivalent="e" controlKey="true" id="markdown_em"/>
 					<menuitem label="Strong" keyEquivalent="b" controlKey="true" id="markdown_strong"/>
 					<menuitem label="Code (inline)" keyEquivalent="d" controlKey="true" id="markdown_codeInline"/>
@@ -270,6 +271,29 @@
 					editor.text = GonzoUtils.readStringFromFilename(File.applicationDirectory.nativePath + "/assets/cheat_sheet.md");
 					gonzo.updateGonzoWithEditor(editor);
 					editor.editable = false;
+				} else if (id == "markdown_link") {
+					editor = gonzo.getCurrentEditor();
+					if (editor == null) {
+						return;
+					}
+					range = new TextRange(editor, true);
+					range.text = "[" + range.text + "]()";
+				} else if (id == "markdown_linkReference") {
+					editor = gonzo.getCurrentEditor();
+					if (editor == null) {
+						return;
+					}
+					range = new TextRange(editor, true);
+					range.text = "[" + range.text + "][]";
+					// open a link dialog, use text as link description
+				} else if (id == "markdown_image") {
+					editor = gonzo.getCurrentEditor();
+					if (editor == null) {
+						return;
+					}
+					range = new TextRange(editor, true);
+					range.text = "![" + range.text + "]()";
+					// open image dialog, use text as alternate text
 				} else if (id == "markdown_em") {
 					this.wrapCurrentEditorTextRange("_");
 				} else if (id == "markdown_strong") {
