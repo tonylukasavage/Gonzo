@@ -46,8 +46,8 @@
 						<menuitem label="H5" keyEquivalent="5" controlKey="true" id="markdown_heading5" />
 						<menuitem label="H6" keyEquivalent="6" controlKey="true" id="markdown_heading6" />
 					</menuitem>
-					<menuitem label="Horizontal Rule" keyEquivalent="r" controlKey="true" id="markdown_hr" enabled="false"/>
-					<menuitem label="Blockquote" keyEquivalent="u" controlKey="true" id="markdown_blockquote" enabled="false"/>
+					<menuitem label="Horizontal Rule" keyEquivalent="r" controlKey="true" id="markdown_hr" />
+					<menuitem label="Blockquote" keyEquivalent="u" controlKey="true" id="markdown_blockquote"/>
 					<menuitem label="Code (block)" keyEquivalent="d" controlKey="true" shiftKey="true" id="markdown_codeBlock" enabled="false"/>
 					<menuitem type="separator"/>
 					<menuitem label="Link..." keyEquivalent="l" controlKey="true" shiftKey="true" id="markdown_linkReference"/>
@@ -333,6 +333,22 @@
 					var pattern:RegExp = /^#*[\s\t]*/;
 					newText += " " + editor.text.substring(index).replace(pattern, "");
 					editor.text = newText;
+					editor.dispatchEvent(new Event(Event.CHANGE));
+				} else if (id == "markdown_hr") {
+					editor = gonzo.getCurrentEditor();
+					if (editor == null) {
+						return;
+					}
+					range = new TextRange(editor, true);
+					
+					var pattern1:RegExp = /[\r\n]$/;
+					var newText1:String = editor.text.substring(0, range.beginIndex);
+					newText1 += newText1.search(pattern1) == -1 && range.beginIndex != 0 ? "\n" : "";
+					newText1 += "***";
+					pattern1 = /^[\r\n]/;
+					newText1 += editor.text.substr(range.beginIndex).search(pattern1) == -1 && range.beginIndex != editor.text.length-1 ? "\n" : "";
+					newText1 += editor.text.substr(range.beginIndex);
+					editor.text = newText1;
 					editor.dispatchEvent(new Event(Event.CHANGE));
 				} else {
 					trace(event.label + "(" + id + ")");
