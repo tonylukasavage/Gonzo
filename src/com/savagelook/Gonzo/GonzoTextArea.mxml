@@ -17,6 +17,8 @@
 			private static const UNDO_BUFFER_SIZE:uint = 30;
 			private static const SHIFT_DIRECTION_LEFT:String = "LEFT";
 			private static const SHIFT_DIRECTION_RIGHT:String = "RIGHT";
+			private static const SHIFT_BLOCKQUOTE:String = "BLOCKQUOTE";
+			private static const SHIFT_CODEBLOCK:String = "CODEBLOCK";
 			
 			private var _undoStack:Vector.<String> = new Vector.<String>();
 			private var _undoNext:String = null;
@@ -66,9 +68,11 @@
 				for (var i:uint = 0; i < lines.length; i++) {
 					if (direction == GonzoTextArea.SHIFT_DIRECTION_LEFT) {
 						shiftChunk += lines[i].replace(pattern, "") + (i+1 == lines.length ? "" : "\n");
-					} else if (direction == GonzoTextArea.SHIFT_DIRECTION_RIGHT) {
+					} else if (direction == GonzoTextArea.SHIFT_DIRECTION_RIGHT || direction == GonzoTextArea.SHIFT_CODEBLOCK) {
 						shiftChunk += "    " + lines[i] + (i+1 == lines.length ? "" : "\n");
-					}
+					} else if (direction == GonzoTextArea.SHIFT_BLOCKQUOTE) {
+						shiftChunk += "> " + lines[i] + (i+1 == lines.length ? "" : "\n");
+					} 
 				}
 				
 				this.setSelection(beginChunk, endChunk);
@@ -85,6 +89,14 @@
 			
 			public function shiftLeft():void {
 				_shiftText(GonzoTextArea.SHIFT_DIRECTION_LEFT);
+			}
+			
+			public function shiftBlockquote():void {
+				_shiftText(GonzoTextArea.SHIFT_BLOCKQUOTE);
+			}
+			
+			public function shiftCodeBlock():void {
+				_shiftText(GonzoTextArea.SHIFT_CODEBLOCK);
 			}
 			
 			public function getCaretIndex():int {

@@ -48,7 +48,7 @@
 					</menuitem>
 					<menuitem label="Horizontal Rule" keyEquivalent="r" controlKey="true" id="markdown_hr" />
 					<menuitem label="Blockquote" keyEquivalent="u" controlKey="true" id="markdown_blockquote"/>
-					<menuitem label="Code (block)" keyEquivalent="d" controlKey="true" shiftKey="true" id="markdown_codeBlock" enabled="false"/>
+					<menuitem label="Code (block)" keyEquivalent="d" controlKey="true" shiftKey="true" id="markdown_codeBlock"/>
 					<menuitem type="separator"/>
 					<menuitem label="Link..." keyEquivalent="l" controlKey="true" shiftKey="true" id="markdown_linkReference"/>
 					<menuitem label="Link (inline)" keyEquivalent="l" controlKey="true" id="markdown_link" />
@@ -255,6 +255,11 @@
 					}
 					editor.shiftRight();
 				} else if (id == "format_shiftLeft") {
+					editor = gonzo.getCurrentEditor();
+					if (editor == null) {
+						return;
+					}
+					editor.shiftLeft();
 				} else if (id == "window_preview") {
 					if (node.@toggled == "true") {
 						gonzo.gonzoSeparator.visible = gonzo.gonzoSeparator.includeInLayout = true;
@@ -334,6 +339,18 @@
 					newText += " " + editor.text.substring(index).replace(pattern, "");
 					editor.text = newText;
 					editor.dispatchEvent(new Event(Event.CHANGE));
+				} else if (id == "markdown_blockquote") {
+					editor = gonzo.getCurrentEditor();
+					if (editor == null) {
+						return;
+					}
+					editor.shiftBlockquote();
+				} else if (id == "markdown_codeBlock") {
+					editor = gonzo.getCurrentEditor();
+					if (editor == null) {
+						return;
+					}
+					editor.shiftCodeBlock();
 				} else if (id == "markdown_hr") {
 					editor = gonzo.getCurrentEditor();
 					if (editor == null) {
