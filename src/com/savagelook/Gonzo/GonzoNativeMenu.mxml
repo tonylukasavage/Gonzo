@@ -38,7 +38,7 @@
 					<menuitem label="Find..." keyEquivalent="f" controlKey="true" id="edit_find" enabled="false"/>
 				</menuitem>
 				<menuitem label="Markdown">
-					<menuitem label="Heading" enabled="false">
+					<menuitem label="Heading">
 						<menuitem label="H1" keyEquivalent="1" controlKey="true" id="markdown_heading1" />
 						<menuitem label="H" keyEquivalent="2" controlKey="true" id="markdown_heading2" />
 						<menuitem label="H3" keyEquivalent="3" controlKey="true" id="markdown_heading3" />
@@ -315,6 +315,25 @@
 					this.wrapCurrentEditorTextRange("**");
 				} else if (id == "markdown_codeInline") {
 					this.wrapCurrentEditorTextRange("`");
+				} else if (id.substr(0, id.length-1) == "markdown_heading") {
+					var level:int = int(id.substr(length-2));
+					editor = gonzo.getCurrentEditor();
+					if (editor == null) {
+						return;
+					}
+					
+					var tmp:int;
+					range = new TextRange(editor, true);
+					var index:int = ((tmp = editor.text.substring(0, range.beginIndex > 0 ? range.beginIndex : 0).lastIndexOf("\r")) == -1 ? 0 : tmp+1);
+					var newText:String = editor.text.substring(0, index);
+					
+					for (i = 0; i < level; i++) {
+						newText += "#";
+					}
+					var pattern:RegExp = /^#*[\s\t]*/;
+					newText += " " + editor.text.substring(index).replace(pattern, "");
+					editor.text = newText;
+					editor.dispatchEvent(new Event(Event.CHANGE));
 				} else {
 					trace(event.label + "(" + id + ")");
 				}
