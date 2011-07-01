@@ -298,6 +298,7 @@
 					}
 					range = new TextRange(editor, true);
 					range.text = "[" + range.text + "]()";
+					editor.setSelection(range.beginIndex + range.text.length - 1, range.beginIndex + range.text.length - 1);
 				} else if (id == "markdown_linkReference") {
 					editor = gonzo.getCurrentEditor();
 					if (editor == null) {
