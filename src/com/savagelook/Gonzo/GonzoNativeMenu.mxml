@@ -369,6 +369,10 @@
 					var pattern:RegExp = /^#*[\s\t]*/;
 					newText += " " + editor.text.substring(index).replace(pattern, "");
 					editor.text = newText;
+					editor.setSelection(
+						index + level + 1,
+						index + level + 1
+					);
 					editor.dispatchEvent(new Event(Event.CHANGE));
 				} else if (id == "markdown_blockquote") {
 					editor = gonzo.getCurrentEditor();
