@@ -52,7 +52,8 @@
 					<menuitem type="separator"/>
 					<menuitem label="Link..." keyEquivalent="l" controlKey="true" shiftKey="true" id="markdown_linkReference"/>
 					<menuitem label="Link (inline)" keyEquivalent="l" controlKey="true" id="markdown_link" />
-					<menuitem label="Image..." keyEquivalent="i" controlKey="true" id="markdown_image" />
+					<menuitem label="Image..." keyEquivalent="i" controlKey="true" shiftKey="true" id="markdown_image" />
+					<menuitem label="Image (inline)" keyEquivalent="i" controlKey="true" id="markdown_imageInline" />
 					<menuitem label="Emphasis" keyEquivalent="e" controlKey="true" id="markdown_em"/>
 					<menuitem label="Strong" keyEquivalent="b" controlKey="true" id="markdown_strong"/>
 					<menuitem label="Code (inline)" keyEquivalent="d" controlKey="true" id="markdown_codeInline"/>
@@ -297,8 +298,22 @@
 						return;
 					}
 					range = new TextRange(editor, true);
+					var orgText:String = range.text;
 					range.text = "[" + range.text + "]()";
-					editor.setSelection(range.beginIndex + range.text.length - 1, range.beginIndex + range.text.length - 1);
+					
+					// the range is blank, put the cursor in the square brackets.
+					// if the range is a selection, put the cursor in the parens.
+					if (orgText.length == 0) {
+						editor.setSelection(
+							range.beginIndex + 1, 
+							range.beginIndex + 1
+						);
+					} else {
+						editor.setSelection(
+							range.beginIndex + range.text.length - 1, 
+							range.beginIndex + range.text.length - 1
+						);
+					}
 				} else if (id == "markdown_linkReference") {
 					editor = gonzo.getCurrentEditor();
 					if (editor == null) {
@@ -307,13 +322,28 @@
 					range = new TextRange(editor, true);
 					range.text = "[" + range.text + "][]";
 					// open a link dialog, use text as link description
-				} else if (id == "markdown_image") {
+				} else if (id == "markdown_imageInline") {
 					editor = gonzo.getCurrentEditor();
 					if (editor == null) {
 						return;
 					}
 					range = new TextRange(editor, true);
+					var origText:String = range.text;
 					range.text = "![" + range.text + "]()";
+					
+					// the range is blank, put the cursor in the square brackets.
+					// if the range is a selection, put the cursor in the parens.
+					if (origText.length == 0) {
+						editor.setSelection(
+							range.beginIndex + 2, 
+							range.beginIndex + 2
+						);
+					} else {
+						editor.setSelection(
+							range.beginIndex + range.text.length - 1, 
+							range.beginIndex + range.text.length - 1
+						);
+					}
 					// open image dialog, use text as alternate text
 				} else if (id == "markdown_em") {
 					this.wrapCurrentEditorTextRange("_");
