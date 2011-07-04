@@ -38,6 +38,7 @@
 					<menuitem label="Find..." keyEquivalent="f" controlKey="true" id="edit_find" enabled="false"/>
 				</menuitem>
 				<menuitem label="Markdown">
+					<menuitm label="getrange" keyEquivalent="g" controlKey="true" id="markdown_getrange"/>
 					<menuitem label="Heading">
 						<menuitem label="H1" keyEquivalent="1" controlKey="true" id="markdown_heading1" />
 						<menuitem label="H" keyEquivalent="2" controlKey="true" id="markdown_heading2" />
@@ -220,6 +221,18 @@
 			
 				if (id == "file_new") {
 					doFileNew();
+					
+				} else if (id == "markdown_getrange") {
+					editor = gonzo.getCurrentEditor();
+					if (editor == null) {
+						return;
+					}
+					
+					range = new TextRange(editor, true);
+					if (range.text.length > 0 && range.text.charAt(0).search(/[\r\n]/) != -1) {
+						
+					}
+					
 				} else if (id == "file_open") {
 					doFileOpen();
 				} else if (id == "file_save") {
