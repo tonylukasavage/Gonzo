@@ -102,10 +102,10 @@
 					lines = before.split(/[\r\n]/);
 					var prefix:String = "", suffix:String = "";
 					
-					trace("BEFORE\n------");
-					for (var k:uint = 0; k < lines.length; k++) {
-						trace("'" + lines[k] + "'");
-					}
+//					trace("BEFORE\n------");
+//					for (var k:uint = 0; k < lines.length; k++) {
+//						trace("'" + lines[k] + "'");
+//					}
 					
 					if (lines.length == 0) {
 						prefix = "";
@@ -120,46 +120,6 @@
 					} else {
 						prefix = ">\n";
 					}
-					
-//					trace("----------------------------\n" + range.text);
-//					trace("----------------------------\n" + this.text.substring(range.beginIndex-2,range.beginIndex-1));
-//					trace("----------------------------\n" + this.text.substring(range.beginIndex-3,range.beginIndex-1));
-//					
-//					if (range.beginIndex == 0) {
-//						prefix = "";
-//					} else if (range.beginIndex == 1 && 
-//							   this.text.charAt(0).search(/[\r\n]/) != -1) {
-//						prefix = "";
-//					} else if (range.beginIndex == 2 &&
-//							   this.text.substr(0, 2).search(/>[\r\n]/)) {
-//						prefix = "";
-//					} else if (range.beginIndex > 1 &&
-//						       this.text.substr(range.beginIndex-2, 2).search(/[\r\n]{2}/) != -1) {
-//						prefix = "";
-//					} else if (range.beginIndex > 2 && 
-//						       this.text.substr(range.beginIndex-3, 3).search(/[\r\n]>[\r\n]/) != -1) {
-//						prefix = "";
-//					} else {
-//						prefix = ">\n";
-//					}
-//			
-//					if (range.endIndex == this.text.length-1) {
-//						suffix = "";
-//					} else if (range.endIndex == this.text.length-2 && 
-//						this.text.charAt(this.text.length-1).search(/[\r\n]/) != -1) {
-//						suffix = "";
-//					} else if (range.endIndex == this.text.length-3 &&
-//						this.text.substr(range.endIndex, 2).search(/[\r\n]>/)) {
-//						suffix = "";
-//					} else if ((this.text.length-1) - range.beginIndex > 1 &&
-//						this.text.substr(range.endIndex, 2).search(/[\r\n]{2}/) != -1) {
-//						suffix = "";
-//					} else if ((this.text.length-1) - range.beginIndex > 2 &&
-//						this.text.substr(range.endIndex, 3).search(/[\r\n]>[\r\n]/) != -1) {
-//						suffix = "";
-//					} else {
-//						suffix = "\n>";
-//					}
 					
 					shiftChunk = prefix + shiftChunk + suffix;
 				}
