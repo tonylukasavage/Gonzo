@@ -99,7 +99,7 @@
 				trace("------------------------\n" + range.text);
 				if (direction == GonzoTextArea.SHIFT_BLOCKQUOTE) {
 					var before:String = this.text.substring(0, range.beginIndex);
-					lines = before.split(/[\r\n]/);
+					var after:String = this.text.substring(range.endIndex);
 					var prefix:String = "", suffix:String = "";
 					
 //					trace("BEFORE\n------");
@@ -107,9 +107,10 @@
 //						trace("'" + lines[k] + "'");
 //					}
 					
+					lines = before.split(/[\r\n]/);
 					if (lines.length == 0) {
 						prefix = "";
-					} else if (lines.length == 1 && (lines[0] as String).search(/[\r\n]/) != -1) {
+					} else if (lines.length == 1 && lines[0] == "") {
 						prefix = "";
 					} else if (lines.length > 1 && 
 						       lines[lines.length-1] == "" &&
@@ -119,6 +120,20 @@
 						prefix = "";
 					} else {
 						prefix = ">\n";
+					}
+					
+					lines = after.split(/[\r\n]/);
+					if (lines.length == 0) {
+						suffix = "";
+					} else if (lines.length == 1 && lines[0] == "") {
+						suffix = "";
+					} else if (lines.length > 1 && 
+						lines[0] == "" &&
+						(lines[1] == "" || (lines[1] as String).search(/^>\s*$/) != -1)
+					) {
+						suffix = "";
+					} else {
+						suffix = "\n>";
 					}
 					
 					shiftChunk = prefix + shiftChunk + suffix;
