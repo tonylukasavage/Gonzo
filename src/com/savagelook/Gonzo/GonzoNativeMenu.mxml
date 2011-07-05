@@ -38,7 +38,6 @@
 					<menuitem label="Find..." keyEquivalent="f" controlKey="true" id="edit_find" enabled="false"/>
 				</menuitem>
 				<menuitem label="Markdown">
-					<menuitm label="getrange" keyEquivalent="g" controlKey="true" id="markdown_getrange"/>
 					<menuitem label="Heading">
 						<menuitem label="H1" keyEquivalent="1" controlKey="true" id="markdown_heading1" />
 						<menuitem label="H" keyEquivalent="2" controlKey="true" id="markdown_heading2" />
@@ -376,11 +375,12 @@
 					var index:int = ((tmp = editor.text.substring(0, range.beginIndex > 0 ? range.beginIndex : 0).lastIndexOf("\r")) == -1 ? 0 : tmp+1);
 					var newText:String = editor.text.substring(0, index);
 					
+					var hashMarks:String = "";
 					for (i = 0; i < level; i++) {
-						newText += "#";
+						hashMarks += "#";
 					}
-					var pattern:RegExp = /^#*[\s\t]*/;
-					newText += " " + editor.text.substring(index).replace(pattern, "");
+					var pattern:RegExp = /^((?:>[\s\t])*)#*[\s\t]*/;
+					newText += editor.text.substring(index).replace(pattern, "$1" + hashMarks + " ");
 					editor.text = newText;
 					
 					// position the cursor
