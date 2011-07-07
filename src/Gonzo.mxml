@@ -186,12 +186,11 @@
 					this,
 					function(event:CloseEvent):void {
 						if (event.detail == Alert.YES) {
-							while (modifiedEditors.length > 0) {
-								var editor:GonzoTextArea = modifiedEditors.shift();
-								editor.setFocus();
-								gonzoMenu.doFileSave(editor);
-							}
-							callLater(command);
+							gonzoMenu.doFileSaveSeries(modifiedEditors, command);
+							
+//							var editor:GonzoTextArea = modifiedEditors.shift();
+//							editor.setFocus();
+//							gonzoMenu.doFileSave(editor, command, modifiedEditors, processModifiedEditors);
 						} else if (event.detail == Alert.NO) {
 							command();
 						} else if (event.detail == Alert.CANCEL) {
@@ -200,6 +199,16 @@
 					}
 				);
 			}
+			
+//			private function processModifiedEditors(modifiedEditors:Vector.<GonzoTextArea>, callback:Function):void {
+//				if (modifiedEditors.length > 0) {
+//					var editor:GonzoTextArea = modifiedEditors.shift();
+//					editor.setFocus();
+//					gonzoMenu.doFileSave(editor, processModifiedEditors);
+//				} else {
+//					callback();
+//				}
+//			}
 			
 			public function createAndAddNewEditor(filename:String = DEFAULT_FILENAME):GonzoTextArea {
 				var vbox:VBox = new VBox();

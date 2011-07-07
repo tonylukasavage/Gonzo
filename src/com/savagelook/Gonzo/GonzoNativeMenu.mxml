@@ -20,7 +20,7 @@
 					<menuitem type="separator"/>
 					<menuitem label="Save" keyEquivalent="s" controlKey="true" id="file_save"/>
 					<menuitem label="Save As..." id="file_saveAs"/>
-					<menuitem label="Save All" keyEquivalent="s" controlKey="true" shiftKey="true" id="file_saveAll"/>
+					<menuitem label="Save All" keyEquivalent="s" controlKey="true" shiftKey="true" id="file_saveAll" enabled="false"/>
 					<menuitem type="separator"/>
 					<menuitem label="Export HTML..." keyEquivalent="h" controlKey="true" id="file_export_html"/>
 					<menuitem type="separator"/>
@@ -40,7 +40,7 @@
 				<menuitem label="Markdown">
 					<menuitem label="Heading">
 						<menuitem label="H1" keyEquivalent="1" controlKey="true" id="markdown_heading1" />
-						<menuitem label="H" keyEquivalent="2" controlKey="true" id="markdown_heading2" />
+						<menuitem label="H2" keyEquivalent="2" controlKey="true" id="markdown_heading2" />
 						<menuitem label="H3" keyEquivalent="3" controlKey="true" id="markdown_heading3" />
 						<menuitem label="H4" keyEquivalent="4" controlKey="true" id="markdown_heading4" />
 						<menuitem label="H5" keyEquivalent="5" controlKey="true" id="markdown_heading5" />
@@ -105,19 +105,15 @@
 					var openedFile:File = event.target as File;
 					var editor:GonzoTextArea = gonzo.createAndAddNewEditor(openedFile.nativePath);
 					editor.text = GonzoUtils.readStringFromFile(openedFile);
+					editor.hasBeenSaved = true;
 					gonzo.updateGonzoWithEditor(editor);
 				});
 				file.browseForOpen("Open a markdown file");
 			}
 			
-			function replace(org:String, fnd:String, rpl:String):String 
-			{
-				return org.split(fnd).join(rpl);
-			}
-			
-			private function doFileSaveAs():void {
+			private function doFileSaveAs(editor:GonzoTextArea = null, callback:Function = null):void {
 				var file:File;
-				var editor:GonzoTextArea = gonzo.getCurrentEditor();
+				editor = editor != null ? editor : gonzo.getCurrentEditor();
 				
 				if (editor == null) {
 					return;
@@ -129,21 +125,75 @@
 					GonzoUtils.writeStringToFilename(saveFile.nativePath, GonzoUtils.stripNonPrintableCharacters(editor.text));
 					editor.isModified = false;
 					editor.fullPath = saveFile.nativePath;
-					gonzo.updateGonzoWithEditor(editor, false);
+					editor.hasBeenSaved = true;
+					
+					if (callback == null) {
+						gonzo.updateGonzoWithEditor(editor, false);
+					} else {
+						callback(editor);
+					}
 				});
 				file.browseForSave("Save file as...");
 			}
 			
-			public function doFileSave(editor:GonzoTextArea = null):void {
+			public function doFileSave(editor:GonzoTextArea = null, callback:Function = null):void {
 				editor = editor != null ? editor : gonzo.getCurrentEditor();
 				
 				if (editor == null) {
 					return;
 				}
 				
+				if (!editor.hasBeenSaved) {
+					this.doFileSaveAs();
+					return;
+				}
+				
 				GonzoUtils.writeStringToFilename(editor.fullPath, GonzoUtils.stripNonPrintableCharacters(editor.text));
 				editor.isModified = false;
+				editor.hasBeenSaved = true;
+				
+				if (callback == null) {
+					gonzo.updateGonzoWithEditor(editor, false);
+				} else {
+					callback(editor);
+				}
+				
+			}
+			
+			public function doFileSaveAsSeries(editor:GonzoTextArea, modifiedEditors:Vector.<GonzoTextArea>, callback:Function):void {
+				var file:File = new File(editor.fullPath);
+				file.addEventListener(Event.SELECT, function(event:Event):void {
+					var saveFile:File = event.target as File;
+					GonzoUtils.writeStringToFilename(saveFile.nativePath, GonzoUtils.stripNonPrintableCharacters(editor.text));
+					editor.isModified = false;
+					editor.fullPath = saveFile.nativePath;
+					editor.hasBeenSaved = true;
+					
+					doFileSaveSeries(modifiedEditors, callback);
+				});
+				file.browseForSave("Save file as...");
+			}
+			
+			public function doFileSaveSeries(modifiedEditors:Vector.<GonzoTextArea>, callback:Function):void {
+				if (modifiedEditors.length <= 0) {
+					callback();
+					return;
+				}
+				
+				var editor:GonzoTextArea = modifiedEditors.shift();
+				editor.setFocus();
+				
+				if (!editor.hasBeenSaved) {
+					this.doFileSaveAsSeries(editor, modifiedEditors, callback);
+					return;
+				}
+				
+				GonzoUtils.writeStringToFilename(editor.fullPath, GonzoUtils.stripNonPrintableCharacters(editor.text));
+				editor.isModified = false;
+				editor.hasBeenSaved = true;
 				gonzo.updateGonzoWithEditor(editor, false);
+				
+				this.doFileSaveSeries(modifiedEditors, callback);
 			}
 			
 			private function doFileExportHtml():void {
@@ -161,6 +211,17 @@
 				file.browseForSave("Export as HTML");
 			}
 			
+			private function closeEditorAndUpdate(editor:GonzoTextArea):void {
+				if (editor == null) {
+					return;
+				}
+				gonzo.editorTabNavigator.removeChild(editor.parent);
+				gonzo.callLater(function():void {
+					editor = gonzo.getCurrentEditor();
+					gonzo.updateGonzoWithEditor(editor, (editor == null ? false : editor.isModified));
+				});
+			}
+			
 			public function doFileClose():void {
 				var editor:GonzoTextArea = gonzo.getCurrentEditor();
 				if (editor == null) {
@@ -175,15 +236,12 @@
 						gonzo,
 						function(event:CloseEvent):void {
 							if (event.detail == Alert.YES) {
-								gonzo.gonzoMenu.doFileSave(editor);
+								gonzo.gonzoMenu.doFileSave(editor, closeEditorAndUpdate);
+							} else if (event.detail == Alert.NO) {
+								closeEditorAndUpdate(editor);
 							} else if (event.detail == Alert.CANCEL) {
 								return;
 							}	
-							gonzo.editorTabNavigator.removeChild(editor.parent);
-							gonzo.callLater(function():void {
-								editor = gonzo.getCurrentEditor();
-								gonzo.updateGonzoWithEditor(editor, (editor == null ? false : editor.isModified));
-							});
 						}
 					);
 				} else {
@@ -220,18 +278,6 @@
 			
 				if (id == "file_new") {
 					doFileNew();
-					
-				} else if (id == "markdown_getrange") {
-					editor = gonzo.getCurrentEditor();
-					if (editor == null) {
-						return;
-					}
-					
-					range = new TextRange(editor, true);
-					if (range.text.length > 0 && range.text.charAt(0).search(/[\r\n]/) != -1) {
-						
-					}
-					
 				} else if (id == "file_open") {
 					doFileOpen();
 				} else if (id == "file_save") {

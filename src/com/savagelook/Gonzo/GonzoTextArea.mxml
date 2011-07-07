@@ -26,7 +26,8 @@
 			private var _isModified:Boolean = false;
 			private var _updateInterval:uint;
 			private var _isReference:Boolean = false;
-			
+			private var _hasBeenSaved:Boolean = false;
+
 			protected function onCreationComplete(event:FlexEvent):void
 			{				
 				SpellUI.enableSpelling(this, "en_US");
@@ -206,6 +207,16 @@
 			}
 			
 			////////// Getters and Setters //////////
+			public function get hasBeenSaved():Boolean
+			{
+				return _hasBeenSaved;
+			}
+			
+			public function set hasBeenSaved(value:Boolean):void
+			{
+				_hasBeenSaved = value;
+			}
+			
 			public function get isReference():Boolean
 			{
 				return _isReference;
