@@ -160,6 +160,11 @@
 			
 			public function doFileSaveAsSeries(editor:GonzoTextArea, modifiedEditors:Vector.<GonzoTextArea>, callback:Function):void {
 				var file:File = new File(editor.fullPath);
+				
+				file.addEventListener(Event.CANCEL, function(event:Event):void {
+					doFileSaveSeries(modifiedEditors, callback);
+				});
+				
 				file.addEventListener(Event.SELECT, function(event:Event):void {
 					var saveFile:File = event.target as File;
 					GonzoUtils.writeStringToFilename(saveFile.nativePath, GonzoUtils.stripNonPrintableCharacters(editor.text));
@@ -169,6 +174,7 @@
 					
 					doFileSaveSeries(modifiedEditors, callback);
 				});
+				
 				file.browseForSave("Save file as...");
 			}
 			
