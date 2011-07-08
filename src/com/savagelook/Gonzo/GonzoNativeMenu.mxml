@@ -89,14 +89,19 @@
 			public var gonzo:Gonzo = null;
 			
 			private function doFileNew():void {
-				var file:File = File.documentsDirectory.resolvePath(Gonzo.DEFAULT_FILENAME);
+				var file:File = File.documentsDirectory.resolvePath(
+					Gonzo.DEFAULT_FILENAME + " " + (Gonzo.UNTITLED_INDEX++).toString() + 
+					"." + Gonzo.DEFAULT_EXTENSION 
+				);
+				var editor:GonzoTextArea = gonzo.createAndAddNewEditor(file.nativePath);
+				gonzo.updateGonzoWithEditor(editor, false);
 				
-				file.addEventListener(Event.SELECT, function(event:Event):void {
-					var savedFile:File = event.target as File;
-					var editor:GonzoTextArea = gonzo.createAndAddNewEditor(savedFile.nativePath);
-					gonzo.updateGonzoWithEditor(editor, false);
-				});
-				file.browseForSave("Create a new markdown file");
+//				file.addEventListener(Event.SELECT, function(event:Event):void {
+//					var savedFile:File = event.target as File;
+//					var editor:GonzoTextArea = gonzo.createAndAddNewEditor(savedFile.nativePath);
+//					gonzo.updateGonzoWithEditor(editor, false);
+//				});
+//				file.browseForSave("Create a new markdown file");
 			}
 			
 			private function doFileOpen():void {
