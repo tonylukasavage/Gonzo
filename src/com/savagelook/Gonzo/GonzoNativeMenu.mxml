@@ -95,13 +95,6 @@
 				);
 				var editor:GonzoTextArea = gonzo.createAndAddNewEditor(file.nativePath);
 				gonzo.updateGonzoWithEditor(editor, false);
-				
-//				file.addEventListener(Event.SELECT, function(event:Event):void {
-//					var savedFile:File = event.target as File;
-//					var editor:GonzoTextArea = gonzo.createAndAddNewEditor(savedFile.nativePath);
-//					gonzo.updateGonzoWithEditor(editor, false);
-//				});
-//				file.browseForSave("Create a new markdown file");
 			}
 			
 			private function doFileOpen():void {
