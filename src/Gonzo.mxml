@@ -159,7 +159,7 @@
 				editor.updateInterval = setInterval(editor.updateEditor, 500);
 			}
 
-			public function checkForUnsavedEditors(command:Function):void {
+			public function checkForUnsavedEditors(command:Function=null):void {
 				var tabNavigator:SuperTabNavigator = this.editorTabNavigator;
 				var modifiedEditors:Vector.<GonzoTextArea> = new Vector.<GonzoTextArea>();
 				var modifiedList:String = "";
@@ -177,25 +177,31 @@
 				}
 
 				if (modifiedEditors.length == 0) {
-					command();
+					if (command != null) {
+						command();
+					}
 					return;
 				}
 				
-				Alert.show(
-					"The following files have been modified. Would you like to save them?\r\n" + modifiedList,
-					"Save your changes?",
-					Alert.YES | Alert.NO | Alert.CANCEL,
-					this,
-					function(event:CloseEvent):void {
-						if (event.detail == Alert.YES) {
-							gonzoMenu.doFileSaveSeries(modifiedEditors, command);
-						} else if (event.detail == Alert.NO) {
-							command();
-						} else if (event.detail == Alert.CANCEL) {
-							return;
-						}	
-					}
-				);
+				if (command == null) {
+					gonzoMenu.doFileSaveSeries(modifiedEditors);
+				} else {
+					Alert.show(
+						"The following files have been modified. Would you like to save them?\r\n" + modifiedList,
+						"Save your changes?",
+						Alert.YES | Alert.NO | Alert.CANCEL,
+						this,
+						function(event:CloseEvent):void {
+							if (event.detail == Alert.YES) {
+								gonzoMenu.doFileSaveSeries(modifiedEditors, command);
+							} else if (event.detail == Alert.NO) {
+								command();
+							} else if (event.detail == Alert.CANCEL) {
+								return;
+							}	
+						}
+					);
+				}
 			}
 			
 			public function createAndAddNewEditor(filename:String = DEFAULT_FILENAME):GonzoTextArea {

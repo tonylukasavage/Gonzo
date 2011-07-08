@@ -20,7 +20,7 @@
 					<menuitem type="separator"/>
 					<menuitem label="Save" keyEquivalent="s" controlKey="true" id="file_save"/>
 					<menuitem label="Save As..." id="file_saveAs"/>
-					<menuitem label="Save All" keyEquivalent="s" controlKey="true" shiftKey="true" id="file_saveAll" enabled="false"/>
+					<menuitem label="Save All" keyEquivalent="s" controlKey="true" shiftKey="true" id="file_saveAll" />
 					<menuitem type="separator"/>
 					<menuitem label="Export HTML..." keyEquivalent="h" controlKey="true" id="file_export_html"/>
 					<menuitem type="separator"/>
@@ -171,6 +171,7 @@
 					editor.isModified = false;
 					editor.fullPath = saveFile.nativePath;
 					editor.hasBeenSaved = true;
+					gonzo.updateGonzoWithEditor(editor, false);
 					
 					doFileSaveSeries(modifiedEditors, callback);
 				});
@@ -178,9 +179,11 @@
 				file.browseForSave("Save file as...");
 			}
 			
-			public function doFileSaveSeries(modifiedEditors:Vector.<GonzoTextArea>, callback:Function):void {
+			public function doFileSaveSeries(modifiedEditors:Vector.<GonzoTextArea>, callback:Function=null):void {
 				if (modifiedEditors.length <= 0) {
-					callback();
+					if (callback != null) {
+						callback();
+					}
 					return;
 				}
 				
@@ -288,6 +291,8 @@
 					this.doFileSave();
 				} else if (id == "file_saveAs") {
 					this.doFileSaveAs();
+				} else if (id == "file_saveAll") {
+					gonzo.checkForUnsavedEditors();
 				} else if (id == "file_close") {
 					this.doFileClose();	
 				} else if (id == "file_closeAll") {
