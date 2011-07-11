@@ -272,6 +272,158 @@
 				}
 			}
 			
+			private function doFileCloseAll():void {
+				gonzo.checkForUnsavedEditors(function():void {
+					gonzo.editorTabNavigator.removeAll();
+					gonzo.updateGonzoWithEditor(null);
+				});
+			}
+			
+			private function doFormatShiftRight():void {
+				var editor:GonzoTextArea = gonzo.getCurrentEditor();
+				if (editor == null) {
+					return;
+				}
+				editor.shiftRight();
+			}
+			
+			private function doFormatShiftLeft():void {
+				var editor:GonzoTextArea = gonzo.getCurrentEditor();
+				if (editor == null) {
+					return;
+				}
+				editor.shiftLeft();
+			}
+			
+			private function doWindowPreview(toggled:Boolean):void {
+				if (toggled) {
+					gonzo.gonzoSeparator.visible = gonzo.gonzoSeparator.includeInLayout = true;
+					gonzo.previewTabNavigator.visible = gonzo.previewTabNavigator.includeInLayout = true;
+				} else {
+					gonzo.gonzoSeparator.visible = gonzo.gonzoSeparator.includeInLayout = false;
+					gonzo.previewTabNavigator.visible = gonzo.previewTabNavigator.includeInLayout = false;
+					gonzo.editorTabNavigator.percentWidth = 100;
+				}
+			}
+			
+			private function doWindowWordWrap(doWrap:Boolean):void {
+				for (var i:uint = 0; i < gonzo.editorTabNavigator.numChildren; i++) {
+					var vbox:VBox = gonzo.editorTabNavigator.getChildAt(i) as VBox;
+					var editor:GonzoTextArea = vbox.getChildByName("editor") as GonzoTextArea;
+					editor.wordWrap = doWrap;
+				}
+			}
+			
+			private function doHelpCheatSheet():void {
+				for (var i:uint = 0; i < gonzo.editorTabNavigator.numChildren; i++) {
+					var vbox:VBox = gonzo.editorTabNavigator.getChildAt(i) as VBox;
+					var editor:GonzoTextArea = vbox.getChildByName("editor") as GonzoTextArea;
+					if (editor.isReference) {
+						gonzo.editorTabNavigator.selectedIndex = i;
+						return;
+					}
+				}
+				
+				editor = gonzo.createAndAddNewEditor(File.documentsDirectory.resolvePath(Gonzo.DEFAULT_FILENAME).nativePath);
+				editor.isReference = true;
+				editor.text = GonzoUtils.readStringFromFilename(File.applicationDirectory.nativePath + "/assets/cheat_sheet.md");
+				gonzo.updateGonzoWithEditor(editor);
+				editor.editable = false;
+			}
+			
+			private function doMarkdownImageInline():void {
+				this._doMarkdownLinkOrImageInline(true);
+			}
+			
+			private function doMarkdownLinkInline():void {
+				this._doMarkdownLinkOrImageInline(false);
+			}
+			
+			private function _doMarkdownLinkOrImageInline(isImage:Boolean = false):void {
+				var editor:GonzoTextArea = gonzo.getCurrentEditor();
+				if (editor == null) {
+					return;
+				}
+				var range:TextRange = new TextRange(editor, true);
+				var origText:String = range.text;
+				range.text = (isImage ? "!" : "") + "[" + range.text + "]()";
+				
+				// the range is blank, put the cursor in the square brackets.
+				// if the range is a selection, put the cursor in the parens.
+				if (origText.length == 0) {
+					editor.setSelection(
+						range.beginIndex + (isImage ? 2 : 1), 
+						range.beginIndex + (isImage ? 2 : 1)
+					);
+				} else {
+					editor.setSelection(
+						range.beginIndex + range.text.length - 1, 
+						range.beginIndex + range.text.length - 1
+					);
+				}
+			}
+			
+			private function doMarkdownHeading(level:uint):void {
+				var editor:GonzoTextArea = gonzo.getCurrentEditor();
+				if (editor == null) {
+					return;
+				}
+				
+				var tmp:int;
+				var range:TextRange = new TextRange(editor, true);
+				var index:int = ((tmp = editor.text.substring(0, range.beginIndex > 0 ? range.beginIndex : 0).lastIndexOf("\r")) == -1 ? 0 : tmp+1);
+				var newText:String = editor.text.substring(0, index);
+				
+				var hashMarks:String = "";
+				for (var i:uint = 0; i < level; i++) {
+					hashMarks += "#";
+				}
+				var pattern:RegExp = /^((?:>[\s\t])*)#*[\s\t]*/;
+				newText += editor.text.substring(index).replace(pattern, "$1" + hashMarks + " ");
+				editor.text = newText;
+				
+				// position the cursor
+				editor.setSelection(
+					index + level + 1,
+					index + level + 1
+				);
+				editor.dispatchEvent(new Event(Event.CHANGE));
+			}
+			
+			private function doMarkdownBlockquote():void {
+				var editor:GonzoTextArea = gonzo.getCurrentEditor();
+				if (editor == null) {
+					return;
+				}
+				editor.shiftBlockquote();
+			}
+			
+			private function doMarkdownCodeBlock():void {
+				var editor:GonzoTextArea = gonzo.getCurrentEditor();
+				if (editor == null) {
+					return;
+				}
+				editor.shiftCodeBlock();
+			}
+			
+			private function doMarkdownHorizontalRule():void {
+				var editor:GonzoTextArea = gonzo.getCurrentEditor();
+				if (editor == null) {
+					return;
+				}
+				var range:TextRange = new TextRange(editor, true);
+				
+				var pattern1:RegExp = /[\r\n]$/;
+				var newText1:String = editor.text.substring(0, range.beginIndex);
+				newText1 += newText1.search(pattern1) == -1 && range.beginIndex != 0 ? "\n" : "";
+				newText1 += "***";
+				pattern1 = /^[\r\n]/;
+				newText1 += editor.text.substr(range.beginIndex).search(pattern1) == -1 && range.beginIndex != editor.text.length-1 ? "\n" : "";
+				newText1 += editor.text.substr(range.beginIndex);
+				editor.text = newText1;
+				editor.dispatchEvent(new Event(Event.CHANGE));
+			}
+			
 			protected function gonzoItemClickHandler(event:FlexNativeMenuEvent):void
 			{
 				var node:XML = event.item as XML;
@@ -282,9 +434,9 @@
 				var range:TextRange;
 			
 				if (id == "file_new") {
-					doFileNew();
+					this.doFileNew();
 				} else if (id == "file_open") {
-					doFileOpen();
+					this.doFileOpen();
 				} else if (id == "file_save") {
 					this.doFileSave();
 				} else if (id == "file_saveAs") {
@@ -294,10 +446,7 @@
 				} else if (id == "file_close") {
 					this.doFileClose();	
 				} else if (id == "file_closeAll") {
-					gonzo.checkForUnsavedEditors(function():void {
-						gonzo.editorTabNavigator.removeAll();
-						gonzo.updateGonzoWithEditor(null);
-					});
+					this.doFileCloseAll();
 				}  else if (id == "file_export_html") {
 					this.doFileExportHtml();
 				} else if (id == "file_exit") {
@@ -315,93 +464,19 @@
 				} else if (id == "edit_selectAll") { 
 					NativeApplication.nativeApplication.selectAll();
 				} else if (id == "format_shiftRight") {
-					editor = gonzo.getCurrentEditor();
-					if (editor == null) {
-						return;
-					}
-					editor.shiftRight();
+					this.doFormatShiftRight();
 				} else if (id == "format_shiftLeft") {
-					editor = gonzo.getCurrentEditor();
-					if (editor == null) {
-						return;
-					}
-					editor.shiftLeft();
+					this.doFormatShiftLeft();
 				} else if (id == "window_preview") {
-					if (node.@toggled == "true") {
-						gonzo.gonzoSeparator.visible = gonzo.gonzoSeparator.includeInLayout = true;
-						gonzo.previewTabNavigator.visible = gonzo.previewTabNavigator.includeInLayout = true;
-					} else {
-						gonzo.gonzoSeparator.visible = gonzo.gonzoSeparator.includeInLayout = false;
-						gonzo.previewTabNavigator.visible = gonzo.previewTabNavigator.includeInLayout = false;
-						gonzo.editorTabNavigator.percentWidth = 100;
-					}
+					this.doWindowPreview(node.@toggled == "true");
 				} else if (id == "format_wordWrap") {
-					var doWrap:Boolean = node.@toggled == "true";
-					for (i = 0; i < gonzo.editorTabNavigator.numChildren; i++) {
-						vbox = gonzo.editorTabNavigator.getChildAt(i) as VBox;
-						editor = vbox.getChildByName("editor") as GonzoTextArea;
-						editor.wordWrap = doWrap;
-					}
+					this.doWindowWordWrap(node.@toggled == "true");
 				} else if (id == "help_tutorial") {
-					for (i = 0; i < gonzo.editorTabNavigator.numChildren; i++) {
-						vbox = gonzo.editorTabNavigator.getChildAt(i) as VBox;
-						editor = vbox.getChildByName("editor") as GonzoTextArea;
-						if (editor.isReference) {
-							gonzo.editorTabNavigator.selectedIndex = i;
-							return;
-						}
-					}
-					
-					editor = gonzo.createAndAddNewEditor(File.documentsDirectory.resolvePath(Gonzo.DEFAULT_FILENAME).nativePath);
-					editor.isReference = true;
-					editor.text = GonzoUtils.readStringFromFilename(File.applicationDirectory.nativePath + "/assets/cheat_sheet.md");
-					gonzo.updateGonzoWithEditor(editor);
-					editor.editable = false;
+					this.doHelpCheatSheet();
 				} else if (id == "markdown_link") {
-					editor = gonzo.getCurrentEditor();
-					if (editor == null) {
-						return;
-					}
-					range = new TextRange(editor, true);
-					var orgText:String = range.text;
-					range.text = "[" + range.text + "]()";
-					
-					// the range is blank, put the cursor in the square brackets.
-					// if the range is a selection, put the cursor in the parens.
-					if (orgText.length == 0) {
-						editor.setSelection(
-							range.beginIndex + 1, 
-							range.beginIndex + 1
-						);
-					} else {
-						editor.setSelection(
-							range.beginIndex + range.text.length - 1, 
-							range.beginIndex + range.text.length - 1
-						);
-					}
+					this.doMarkdownLinkInline();
 				} else if (id == "markdown_imageInline") {
-					editor = gonzo.getCurrentEditor();
-					if (editor == null) {
-						return;
-					}
-					range = new TextRange(editor, true);
-					var origText:String = range.text;
-					range.text = "![" + range.text + "]()";
-					
-					// the range is blank, put the cursor in the square brackets.
-					// if the range is a selection, put the cursor in the parens.
-					if (origText.length == 0) {
-						editor.setSelection(
-							range.beginIndex + 2, 
-							range.beginIndex + 2
-						);
-					} else {
-						editor.setSelection(
-							range.beginIndex + range.text.length - 1, 
-							range.beginIndex + range.text.length - 1
-						);
-					}
-					// open image dialog, use text as alternate text
+					this.doMarkdownImageInline();
 				} else if (id == "markdown_em") {
 					this.wrapCurrentEditorTextRange("_");
 				} else if (id == "markdown_strong") {
@@ -409,59 +484,13 @@
 				} else if (id == "markdown_codeInline") {
 					this.wrapCurrentEditorTextRange("`");
 				} else if (id.substr(0, id.length-1) == "markdown_heading") {
-					var level:int = int(id.substr(length-2));
-					editor = gonzo.getCurrentEditor();
-					if (editor == null) {
-						return;
-					}
-					
-					var tmp:int;
-					range = new TextRange(editor, true);
-					var index:int = ((tmp = editor.text.substring(0, range.beginIndex > 0 ? range.beginIndex : 0).lastIndexOf("\r")) == -1 ? 0 : tmp+1);
-					var newText:String = editor.text.substring(0, index);
-					
-					var hashMarks:String = "";
-					for (i = 0; i < level; i++) {
-						hashMarks += "#";
-					}
-					var pattern:RegExp = /^((?:>[\s\t])*)#*[\s\t]*/;
-					newText += editor.text.substring(index).replace(pattern, "$1" + hashMarks + " ");
-					editor.text = newText;
-					
-					// position the cursor
-					editor.setSelection(
-						index + level + 1,
-						index + level + 1
-					);
-					editor.dispatchEvent(new Event(Event.CHANGE));
+					this.doMarkdownHeading(int(id.substr(length-2)));
 				} else if (id == "markdown_blockquote") {
-					editor = gonzo.getCurrentEditor();
-					if (editor == null) {
-						return;
-					}
-					editor.shiftBlockquote();
+					this.doMarkdownBlockquote();
 				} else if (id == "markdown_codeBlock") {
-					editor = gonzo.getCurrentEditor();
-					if (editor == null) {
-						return;
-					}
-					editor.shiftCodeBlock();
+					this.doMarkdownCodeBlock();
 				} else if (id == "markdown_hr") {
-					editor = gonzo.getCurrentEditor();
-					if (editor == null) {
-						return;
-					}
-					range = new TextRange(editor, true);
-					
-					var pattern1:RegExp = /[\r\n]$/;
-					var newText1:String = editor.text.substring(0, range.beginIndex);
-					newText1 += newText1.search(pattern1) == -1 && range.beginIndex != 0 ? "\n" : "";
-					newText1 += "***";
-					pattern1 = /^[\r\n]/;
-					newText1 += editor.text.substr(range.beginIndex).search(pattern1) == -1 && range.beginIndex != editor.text.length-1 ? "\n" : "";
-					newText1 += editor.text.substr(range.beginIndex);
-					editor.text = newText1;
-					editor.dispatchEvent(new Event(Event.CHANGE));
+					this.doMarkdownHorizontalRule();
 				} else {
 					trace(event.label + "(" + id + ")");
 				}
