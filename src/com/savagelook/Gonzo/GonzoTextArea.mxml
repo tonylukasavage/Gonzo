@@ -3,6 +3,7 @@
 			xmlns:s="library://ns.adobe.com/flex/spark" 
 			xmlns:mx="library://ns.adobe.com/flex/mx"
 			keyFocusChange="onKeyFocusChange(event)"
+			mouseUp="onMouseUp(event)"
 			creationComplete="onCreationComplete(event)"
 			>
 	<fx:Script>
@@ -46,6 +47,26 @@
 				} else {
 					this.textField.replaceSelectedText("    ");
 				}
+			}
+			
+			protected function onMouseUp(event:MouseEvent):void
+			{
+				var range:TextRange = new TextRange(this, true);
+				while (range.text.length > 0 &&
+					   range.text.charAt(range.text.length-1).search(/[\r\n]/) != -1) {
+					this.setSelection(range.beginIndex, range.endIndex-1);
+					this.validateNow();
+					range = new TextRange(this, true);
+				}
+				
+				while (range.text.length > 0 &&
+					   range.text.charAt(0).search(/[\r\n]/) != -1) {
+					this.setSelection(range.beginIndex+1, range.endIndex);
+					this.validateNow();
+					range = new TextRange(this, true);
+				}
+				
+				range = null;
 			}
 			
 			private function getCurrentShiftChunk():String {
@@ -261,6 +282,7 @@
 			{
 				_updateInterval = value;
 			}
+
 		]]>
 	</fx:Script>
 </mx:TextArea>

@@ -12,7 +12,7 @@
 		<fx:XML format="e4x" id="gonzoMenuData">
 			<root>
 				<menuitem label="File">
-					<menuitem label="New..." keyEquivalent="n" controlKey="true" id="file_new"/>
+					<menuitem label="New..." keyEquivalent="n" controlKey="true" id="fileNew"/>
 					<menuitem label="Open..." keyEquivalent="o" controlKey="true" id="file_open"/>
 					<menuitem type="separator"/>
 					<menuitem label="Close" id="file_close" keyEquivalent="w" controlKey="true"/>
@@ -428,12 +428,14 @@
 			{
 				var node:XML = event.item as XML;
 				var id:String = node.@id;
-				var i:uint;
-				var vbox:VBox;
-				var editor:GonzoTextArea;
-				var range:TextRange;
+				//var i:uint;
+				//var vbox:VBox;
+				//var editor:GonzoTextArea;
+				//var range:TextRange;
+				
+				
 			
-				if (id == "file_new") {
+				if (id == "fileNew") {
 					this.doFileNew();
 				} else if (id == "file_open") {
 					this.doFileOpen();
