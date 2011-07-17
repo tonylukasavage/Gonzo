@@ -433,6 +433,7 @@
 				//var vbox:VBox;
 				//var editor:GonzoTextArea;
 				//var range:TextRange;
+				var editor:GonzoTextArea = gonzo.getCurrentEditor();
 				
 				
 			
@@ -481,11 +482,20 @@
 				} else if (id == "markdown_imageInline") {
 					this.doMarkdownImageInline();
 				} else if (id == "markdown_em") {
-					this.wrapCurrentEditorTextRange("_");
+					if (editor == null) {
+						return;
+					}
+					editor.wrapCurrentTextRange("_");
 				} else if (id == "markdown_strong") {
-					this.wrapCurrentEditorTextRange("**");
+					if (editor == null) {
+						return;
+					}
+					editor.wrapCurrentTextRange("**");
 				} else if (id == "markdown_codeInline") {
-					this.wrapCurrentEditorTextRange("`");
+					if (editor == null) {
+						return;
+					}
+					editor.wrapCurrentTextRange("`");
 				} else if (id.substr(0, id.length-1) == "markdown_heading") {
 					this.doMarkdownHeading(int(id.substr(length-2)));
 				} else if (id == "markdown_blockquote") {
@@ -497,19 +507,6 @@
 				} else {
 					trace(event.label + "(" + id + ")");
 				}
-			}
-			
-			private function wrapCurrentEditorTextRange(wrapper:String):void {
-				var editor:GonzoTextArea = gonzo.getCurrentEditor();
-				if (editor == null) {
-					return;
-				}
-				var range:TextRange = new TextRange(editor, true);
-				if (range.text.length == 0) {
-					return;
-				}
-				range.text = wrapper + range.text + wrapper;
-				gonzo.updateGonzoWithEditor(editor, true);
 			}
 			
 			private function keyEquivalentModifiers(item:Object):Array

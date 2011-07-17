@@ -31,7 +31,20 @@
 
 			protected function onCreationComplete(event:FlexEvent):void
 			{				
+				var self:GonzoTextArea = this;
+				var cm:ContextMenu = (this.getTextField() as TextField).contextMenu as ContextMenu;
+				//cm.hideBuiltInItems();
+				var cmi:ContextMenuItem = new ContextMenuItem("Strong");
+				cmi.addEventListener(Event.SELECT, function(e:Event):void {
+					self.wrapCurrentTextRange("**");
+				});
+				cm.customItems.unshift(cmi);
+				
+				(this.getTextField() as TextField).contextMenu = cm;
 				SpellUI.enableSpelling(this, "en_US");
+				//this.contextMenu.removeAllItems();
+				
+				
 			}
 			
 			protected function onKeyFocusChange(event:FocusEvent):void
@@ -69,6 +82,18 @@
 				range = null;
 			}
 			
+			
+			public function wrapCurrentTextRange(wrapper:String):void {
+				var range:TextRange = new TextRange(this, true);
+				if (range.text.length == 0) {
+					return;
+				}
+				range.text = wrapper + range.text + wrapper;
+				this.dispatchEvent(new Event(Event.CHANGE));
+			}
+			
+			
+			// Shifting
 			private function getCurrentShiftChunk():String {
 				var tmp:int;
 				var range:TextRange = new TextRange(this, true);
