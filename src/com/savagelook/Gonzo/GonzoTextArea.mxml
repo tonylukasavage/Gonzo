@@ -37,13 +37,13 @@
 				//cm.hideBuiltInItems();
 				
 				var items:ArrayList = new ArrayList();
-				items.addItem({name:"Strong", func:this.doStrongTextRange});
 				items.addItem({name:"Emphasis", func:this.doEmphasisTextRange});
+				items.addItem({name:"Strong", func:this.doStrongTextRange});
 				items.addItem({name:"Code (inline)", func:this.doCodeTextRange});
 				
 				for (var i:uint = 0; i < items.length; i++) {
 					var object:Object = items.getItemAt(i);
-					var cmi:ContextMenuItem = new ContextMenuItem(object.name);
+					var cmi:ContextMenuItem = new ContextMenuItem(object.name, i == 0);
 					cmi.data = object.func;
 					cmi.addEventListener(Event.SELECT, function(e:Event):void {
 						((e.target as ContextMenuItem).data as Function)();
