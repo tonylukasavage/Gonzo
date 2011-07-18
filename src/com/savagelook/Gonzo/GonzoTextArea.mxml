@@ -37,6 +37,8 @@
 				//cm.hideBuiltInItems();
 				
 				var items:ArrayList = new ArrayList();
+				items.addItem({name:"Link (inline)", func:this.doLinkInline});
+				items.addItem({name:"Image (inline)", func:this.doImageInline});
 				items.addItem({name:"Emphasis", func:this.doEmphasisTextRange});
 				items.addItem({name:"Strong", func:this.doStrongTextRange});
 				items.addItem({name:"Code (inline)", func:this.doCodeTextRange});
@@ -152,6 +154,7 @@
 						range.beginIndex + range.text.length - 1
 					);
 				}
+				this.dispatchEvent(new Event(Event.CHANGE));
 			}
 			
 			public function doHeading(level:uint):void {
