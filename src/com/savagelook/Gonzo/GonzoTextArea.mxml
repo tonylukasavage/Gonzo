@@ -124,10 +124,12 @@
 				var newText1:String = this.text.substring(0, range.beginIndex);
 				newText1 += newText1.search(pattern1) == -1 && range.beginIndex != 0 ? "\n" : "";
 				newText1 += "***";
+				var caretIndex:int = newText1.length-3;
 				pattern1 = /^[\r\n]/;
 				newText1 += this.text.substr(range.beginIndex).search(pattern1) == -1 && range.beginIndex != this.text.length-1 ? "\n" : "";
 				newText1 += this.text.substr(range.beginIndex);
 				this.text = newText1;
+				this.setSelection(caretIndex, caretIndex+3);
 				this.dispatchEvent(new Event(Event.CHANGE));
 			}
 			
@@ -255,7 +257,12 @@
 							  ) {
 						prefix = "";
 					} else {
-						prefix = ">\n";
+						if (lines.length > 1 && 
+							lines[lines.length-1] == "" &&
+							(lines[lines.length-2] as String).search(/^>/) != -1) {
+							prefix += ">";
+						}
+						prefix += "\n";
 					}
 					
 					lines = after.split(/[\r\n]/);
