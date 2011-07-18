@@ -37,6 +37,9 @@
 				//cm.hideBuiltInItems();
 				
 				var items:ArrayList = new ArrayList();
+				items.addItem({name:"Horizontal Rule", func:this.doHorizontalRule});
+				items.addItem({name:"Blockquote", func:this.shiftBlockquote});
+				items.addItem({name:"Code (block)", func:this.shiftCodeBlock});
 				items.addItem({name:"Link (inline)", func:this.doLinkInline});
 				items.addItem({name:"Image (inline)", func:this.doImageInline});
 				items.addItem({name:"Emphasis", func:this.doEmphasisTextRange});
@@ -45,7 +48,7 @@
 				
 				for (var i:uint = 0; i < items.length; i++) {
 					var object:Object = items.getItemAt(i);
-					var cmi:ContextMenuItem = new ContextMenuItem(object.name, i == 0);
+					var cmi:ContextMenuItem = new ContextMenuItem(object.name, i == 0 || i == 3);
 					cmi.data = object.func;
 					cmi.addEventListener(Event.SELECT, function(e:Event):void {
 						((e.target as ContextMenuItem).data as Function)();
