@@ -332,110 +332,17 @@
 				editor.editable = false;
 			}
 			
-			private function doMarkdownImageInline():void {
-				this._doMarkdownLinkOrImageInline(true);
-			}
-			
-			private function doMarkdownLinkInline():void {
-				this._doMarkdownLinkOrImageInline(false);
-			}
-			
-			private function _doMarkdownLinkOrImageInline(isImage:Boolean = false):void {
-				var editor:GonzoTextArea = gonzo.getCurrentEditor();
-				if (editor == null) {
-					return;
-				}
-				var range:TextRange = new TextRange(editor, true);
-				var origText:String = range.text;
-				range.text = (isImage ? "!" : "") + "[" + range.text + "]()";
-				
-				// the range is blank, put the cursor in the square brackets.
-				// if the range is a selection, put the cursor in the parens.
-				if (origText.length == 0) {
-					editor.setSelection(
-						range.beginIndex + (isImage ? 2 : 1), 
-						range.beginIndex + (isImage ? 2 : 1)
-					);
-				} else {
-					editor.setSelection(
-						range.beginIndex + range.text.length - 1, 
-						range.beginIndex + range.text.length - 1
-					);
-				}
-			}
-			
-			private function doMarkdownHeading(level:uint):void {
-				var editor:GonzoTextArea = gonzo.getCurrentEditor();
-				if (editor == null) {
-					return;
-				}
-				
-				var tmp:int;
-				var range:TextRange = new TextRange(editor, true);
-				var index:int = ((tmp = editor.text.substring(0, range.beginIndex > 0 ? range.beginIndex : 0).lastIndexOf("\r")) == -1 ? 0 : tmp+1);
-				var newText:String = editor.text.substring(0, index);
-				
-				var hashMarks:String = "";
-				for (var i:uint = 0; i < level; i++) {
-					hashMarks += "#";
-				}
-				var pattern:RegExp = /^((?:>[\s\t])*)#*[\s\t]*/;
-				newText += editor.text.substring(index).replace(pattern, "$1" + hashMarks + " ");
-				editor.text = newText;
-				
-				// position the cursor
-				editor.setSelection(
-					index + level + 1,
-					index + level + 1
-				);
-				editor.dispatchEvent(new Event(Event.CHANGE));
-			}
-			
-			private function doMarkdownBlockquote():void {
-				var editor:GonzoTextArea = gonzo.getCurrentEditor();
-				if (editor == null) {
-					return;
-				}
-				editor.shiftBlockquote();
-			}
-			
-			private function doMarkdownCodeBlock():void {
-				var editor:GonzoTextArea = gonzo.getCurrentEditor();
-				if (editor == null) {
-					return;
-				}
-				editor.shiftCodeBlock();
-			}
-			
-			private function doMarkdownHorizontalRule():void {
-				var editor:GonzoTextArea = gonzo.getCurrentEditor();
-				if (editor == null) {
-					return;
-				}
-				var range:TextRange = new TextRange(editor, true);
-				
-				var pattern1:RegExp = /[\r\n]$/;
-				var newText1:String = editor.text.substring(0, range.beginIndex);
-				newText1 += newText1.search(pattern1) == -1 && range.beginIndex != 0 ? "\n" : "";
-				newText1 += "***";
-				pattern1 = /^[\r\n]/;
-				newText1 += editor.text.substr(range.beginIndex).search(pattern1) == -1 && range.beginIndex != editor.text.length-1 ? "\n" : "";
-				newText1 += editor.text.substr(range.beginIndex);
-				editor.text = newText1;
-				editor.dispatchEvent(new Event(Event.CHANGE));
-			}
-			
 			protected function gonzoItemClickHandler(event:FlexNativeMenuEvent):void
 			{
 				var node:XML = event.item as XML;
 				var id:String = node.@id;
-				//var i:uint;
-				//var vbox:VBox;
-				//var editor:GonzoTextArea;
-				//var range:TextRange;
 				var editor:GonzoTextArea = gonzo.getCurrentEditor();
 				
-				
+				if (id.substr(0, 9) == "markdown_") {
+					if (editor == null) {
+						return;
+					}
+				}
 			
 				if (id == "fileNew") {
 					this.doFileNew();
@@ -478,32 +385,23 @@
 				} else if (id == "help_tutorial") {
 					this.doHelpCheatSheet();
 				} else if (id == "markdown_link") {
-					this.doMarkdownLinkInline();
+					editor.doLinkInline();
 				} else if (id == "markdown_imageInline") {
-					this.doMarkdownImageInline();
+					editor.doImageInline();
 				} else if (id == "markdown_em") {
-					if (editor == null) {
-						return;
-					}
 					editor.wrapCurrentTextRange("_");
 				} else if (id == "markdown_strong") {
-					if (editor == null) {
-						return;
-					}
 					editor.wrapCurrentTextRange("**");
 				} else if (id == "markdown_codeInline") {
-					if (editor == null) {
-						return;
-					}
 					editor.wrapCurrentTextRange("`");
 				} else if (id.substr(0, id.length-1) == "markdown_heading") {
-					this.doMarkdownHeading(int(id.substr(length-2)));
+					editor.doHeading(int(id.substr(length-2)));
 				} else if (id == "markdown_blockquote") {
-					this.doMarkdownBlockquote();
+					editor.shiftBlockquote();
 				} else if (id == "markdown_codeBlock") {
-					this.doMarkdownCodeBlock();
+					editor.shiftCodeBlock();
 				} else if (id == "markdown_hr") {
-					this.doMarkdownHorizontalRule();
+					editor.doHorizontalRule();
 				} else {
 					trace(event.label + "(" + id + ")");
 				}

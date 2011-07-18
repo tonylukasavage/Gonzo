@@ -82,7 +82,7 @@
 				range = null;
 			}
 			
-			
+			// Markdown editing functions
 			public function wrapCurrentTextRange(wrapper:String):void {
 				var range:TextRange = new TextRange(this, true);
 				if (range.text.length == 0) {
@@ -92,6 +92,68 @@
 				this.dispatchEvent(new Event(Event.CHANGE));
 			}
 			
+			public function doHorizontalRule():void {
+				var range:TextRange = new TextRange(this, true);
+				var pattern1:RegExp = /[\r\n]$/;
+				var newText1:String = this.text.substring(0, range.beginIndex);
+				newText1 += newText1.search(pattern1) == -1 && range.beginIndex != 0 ? "\n" : "";
+				newText1 += "***";
+				pattern1 = /^[\r\n]/;
+				newText1 += this.text.substr(range.beginIndex).search(pattern1) == -1 && range.beginIndex != this.text.length-1 ? "\n" : "";
+				newText1 += this.text.substr(range.beginIndex);
+				this.text = newText1;
+				this.dispatchEvent(new Event(Event.CHANGE));
+			}
+			
+			public function doImageInline():void {
+				this._doLinkOrImageInline(true);
+			}
+			
+			public function doLinkInline():void {
+				this._doLinkOrImageInline(false);
+			}
+			
+			private function _doLinkOrImageInline(isImage:Boolean = false):void {
+				var range:TextRange = new TextRange(this, true);
+				var origText:String = range.text;
+				range.text = (isImage ? "!" : "") + "[" + range.text + "]()";
+				
+				// the range is blank, put the cursor in the square brackets.
+				// if the range is a selection, put the cursor in the parens.
+				if (origText.length == 0) {
+					this.setSelection(
+						range.beginIndex + (isImage ? 2 : 1), 
+						range.beginIndex + (isImage ? 2 : 1)
+					);
+				} else {
+					this.setSelection(
+						range.beginIndex + range.text.length - 1, 
+						range.beginIndex + range.text.length - 1
+					);
+				}
+			}
+			
+			public function doHeading(level:uint):void {
+				var tmp:int;
+				var range:TextRange = new TextRange(this, true);
+				var index:int = ((tmp = this.text.substring(0, range.beginIndex > 0 ? range.beginIndex : 0).lastIndexOf("\r")) == -1 ? 0 : tmp+1);
+				var newText:String = this.text.substring(0, index);
+				
+				var hashMarks:String = "";
+				for (var i:uint = 0; i < level; i++) {
+					hashMarks += "#";
+				}
+				var pattern:RegExp = /^((?:>[\s\t])*)#*[\s\t]*/;
+				newText += this.text.substring(index).replace(pattern, "$1" + hashMarks + " ");
+				this.text = newText;
+				
+				// position the cursor
+				this.setSelection(
+					index + level + 1,
+					index + level + 1
+				);
+				this.dispatchEvent(new Event(Event.CHANGE));
+			}
 			
 			// Shifting
 			private function getCurrentShiftChunk():String {
