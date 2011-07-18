@@ -389,11 +389,11 @@
 				} else if (id == "markdown_imageInline") {
 					editor.doImageInline();
 				} else if (id == "markdown_em") {
-					editor.wrapCurrentTextRange("_");
+					editor.doEmphasisTextRange();
 				} else if (id == "markdown_strong") {
-					editor.wrapCurrentTextRange("**");
+					editor.doStrongTextRange();
 				} else if (id == "markdown_codeInline") {
-					editor.wrapCurrentTextRange("`");
+					editor.doCodeTextRange();
 				} else if (id.substr(0, id.length-1) == "markdown_heading") {
 					editor.doHeading(int(id.substr(length-2)));
 				} else if (id == "markdown_blockquote") {

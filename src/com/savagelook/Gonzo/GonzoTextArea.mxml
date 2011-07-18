@@ -10,6 +10,7 @@
 		<![CDATA[
 			import com.adobe.linguistics.spelling.SpellUI;
 			
+			import mx.collections.ArrayList;
 			import mx.controls.textClasses.TextRange;
 			import mx.core.mx_internal;
 			import mx.events.FlexEvent;
@@ -34,17 +35,25 @@
 				var self:GonzoTextArea = this;
 				var cm:ContextMenu = (this.getTextField() as TextField).contextMenu as ContextMenu;
 				//cm.hideBuiltInItems();
-				var cmi:ContextMenuItem = new ContextMenuItem("Strong");
-				cmi.addEventListener(Event.SELECT, function(e:Event):void {
-					self.wrapCurrentTextRange("**");
-				});
-				cm.customItems.unshift(cmi);
+				
+				var items:ArrayList = new ArrayList();
+				items.addItem({name:"Strong", func:this.doStrongTextRange});
+				items.addItem({name:"Emphasis", func:this.doEmphasisTextRange});
+				items.addItem({name:"Code (inline)", func:this.doCodeTextRange});
+				
+				for (var i:uint = 0; i < items.length; i++) {
+					var object:Object = items.getItemAt(i);
+					var cmi:ContextMenuItem = new ContextMenuItem(object.name);
+					cmi.data = object.func;
+					cmi.addEventListener(Event.SELECT, function(e:Event):void {
+						((e.target as ContextMenuItem).data as Function)();
+					});
+					cm.customItems.push(cmi);
+				}
 				
 				(this.getTextField() as TextField).contextMenu = cm;
 				SpellUI.enableSpelling(this, "en_US");
 				//this.contextMenu.removeAllItems();
-				
-				
 			}
 			
 			protected function onKeyFocusChange(event:FocusEvent):void
@@ -83,7 +92,19 @@
 			}
 			
 			// Markdown editing functions
-			public function wrapCurrentTextRange(wrapper:String):void {
+			public function doStrongTextRange():void {
+				this._wrapCurrentTextRange("**");
+			}
+			
+			public function doEmphasisTextRange():void {
+				this._wrapCurrentTextRange("_");
+			}
+			
+			public function doCodeTextRange():void {
+				this._wrapCurrentTextRange("`");
+			}
+			
+			private function _wrapCurrentTextRange(wrapper:String):void {
 				var range:TextRange = new TextRange(this, true);
 				if (range.text.length == 0) {
 					return;
