@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx" width="400" height="180"
+			   title="Insert link or image..."
+			   close="onClose();"
+			   creationComplete="titlewindow1_creationCompleteHandler(event)">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import mx.controls.textClasses.TextRange;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			
+			public var editor:GonzoTextArea = null;
+			
+			private function onClose():void {
+				PopUpManager.removePopUp(this);
+			}
+
+			protected function titlewindow1_creationCompleteHandler(event:FlexEvent):void
+			{
+				var range:TextRange = new TextRange(editor, true);
+				if (range.text == "") {
+					linkText.setFocus();
+				} else {
+					linkText.text = range.text;
+					if (!isImplicit.selected) {
+						linkReferenceId.setFocus();
+					} else {
+						linkUrl.setFocus();
+					}
+				}
+			}
+
+			protected function button1_clickHandler(event:MouseEvent):void
+			{
+				var markdown:String = "[" + linkText.text + "]";
+				var ref:String;
+				
+				// need to search for existing references in the markdown
+				
+				if (isImplicit.selected) {
+					markdown += "[]";
+					ref = linkText.text;
+				} else {
+					markdown += "[" + linkReferenceId.text + "]";
+					ref = linkReferenceId.text;
+				}
+				
+				if (editor != null) {
+					var range:TextRange = new TextRange(editor, true);
+					range.text = markdown;
+				}
+				editor.text += "\n[" + ref + "]: " + linkUrl.text;
+				editor.dispatchEvent(new Event(Event.CHANGE));
+				// need to remove [] and () from text
+				this.onClose();
+			}
+
+		]]>
+	</fx:Script>
+	<s:VGroup gap="10" paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10" width="100%">
+		<s:HGroup verticalAlign="middle" width="100%">
+			<s:Label text="Text:" width="80" fontWeight="bold"/>
+			<s:TextInput id="linkText" width="100%" />
+		</s:HGroup>
+		<s:HGroup verticalAlign="middle" width="100%">
+			<s:Label text="Reference ID:" width="80" fontWeight="bold"/>
+			<s:TextInput id="linkReferenceId" width="100%" enabled="{!isImplicit.selected}"/>
+		</s:HGroup>
+		<s:HGroup verticalAlign="middle" width="100%">
+			<s:Label text="URL:" width="80" fontWeight="bold"/>
+			<s:TextInput id="linkUrl" width="100%" />
+		</s:HGroup>
+		<s:HGroup gap="0"  width="100%">
+			<s:HGroup width="100%" horizontalAlign="left">
+				<s:CheckBox id="isImplicit" label="implicit" selected="true"/>
+			</s:HGroup>
+			<s:HGroup width="100%" gap="10" horizontalAlign="right">
+				<s:Button label="OK" click="button1_clickHandler(event)"/>
+				<s:Button label="Cancel" click="onClose();"/>
+			</s:HGroup>
+		</s:HGroup>
+	</s:VGroup>
+</s:TitleWindow>

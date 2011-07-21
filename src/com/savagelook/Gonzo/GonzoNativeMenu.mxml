@@ -50,7 +50,8 @@
 					<menuitem label="Blockquote" keyEquivalent="u" controlKey="true" id="markdown_blockquote"/>
 					<menuitem label="Code (block)" keyEquivalent="d" controlKey="true" shiftKey="true" id="markdown_codeBlock"/>
 					<menuitem type="separator"/>
-					<menuitem label="Link (inline)" keyEquivalent="l" controlKey="true" id="markdown_link" />
+					<menuitem label="Link (inline)" keyEquivalent="l" controlKey="true" id="markdown_linkInline" />
+					<menuitem label="Link..." keyEquivalent="l" controlKey="true" shiftKey="true" id="markdown_link" />
 					<menuitem label="Image (inline)" keyEquivalent="i" controlKey="true" id="markdown_imageInline" />
 					<menuitem label="Emphasis" keyEquivalent="e" controlKey="true" id="markdown_em"/>
 					<menuitem label="Strong" keyEquivalent="b" controlKey="true" id="markdown_strong"/>
@@ -384,10 +385,14 @@
 					this.doWindowWordWrap(node.@toggled == "true");
 				} else if (id == "help_tutorial") {
 					this.doHelpCheatSheet();
-				} else if (id == "markdown_link") {
+				} else if (id == "markdown_linkInline") {
 					editor.doLinkInline();
 				} else if (id == "markdown_imageInline") {
 					editor.doImageInline();
+				} else if (id == "markdown_link") {
+					var linkWindow:GonzoLinkWindow = PopUpManager.createPopUp(gonzo, GonzoLinkWindow, true) as GonzoLinkWindow;
+					linkWindow.editor = editor;
+					PopUpManager.centerPopUp(linkWindow);
 				} else if (id == "markdown_em") {
 					editor.doEmphasisTextRange();
 				} else if (id == "markdown_strong") {
