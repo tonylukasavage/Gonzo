@@ -5,5 +5,5 @@
 .flexProperties
 bin-debug/*
 !bin-debug/.gitignore
-Gonzo.air
+Gonzo*.air
 Gonzo.p12
