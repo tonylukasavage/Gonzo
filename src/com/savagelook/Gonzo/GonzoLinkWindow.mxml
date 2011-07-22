@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
 			   xmlns:s="library://ns.adobe.com/flex/spark" 
-			   xmlns:mx="library://ns.adobe.com/flex/mx" width="400" height="180"
+			   xmlns:mx="library://ns.adobe.com/flex/mx" width="400" height="210"
 			   title="Insert link or image..."
 			   close="onClose();"
 			   creationComplete="titlewindow1_creationCompleteHandler(event)">
@@ -10,9 +10,13 @@
 	</fx:Declarations>
 	<fx:Script>
 		<![CDATA[
+			import mx.controls.Alert;
 			import mx.controls.textClasses.TextRange;
+			import mx.events.CloseEvent;
 			import mx.events.FlexEvent;
 			import mx.managers.PopUpManager;
+			
+			import spark.events.TextOperationEvent;
 			
 			public var editor:GonzoTextArea = null;
 			
@@ -22,42 +26,117 @@
 
 			protected function titlewindow1_creationCompleteHandler(event:FlexEvent):void
 			{
+				if (editor == null) {
+					return;
+				}
+				
 				var range:TextRange = new TextRange(editor, true);
 				if (range.text == "") {
 					linkText.setFocus();
 				} else {
 					linkText.text = range.text;
-					if (!isImplicit.selected) {
-						linkReferenceId.setFocus();
+					if (isImplicit.selected) {
+						linkReferenceId.text = linkText.text;
+						var pattern:String = "(?:^|[\\r\\n])\\[(" + linkReferenceId.text + 
+							")\\]\\:\\s*([^\\s\\t\\r\\n]+)\\s*(?:\"([^\"]+)\"){0,1}";
+						var matches:Array = editor.text.match(new RegExp(pattern));
+						if (matches != null && matches.length >= 4) {
+							linkUrl.text = matches[2];
+							linkTitle.text = matches[3];
+							linkText.setFocus();
+						} else {
+							linkUrl.setFocus();
+						}
 					} else {
-						linkUrl.setFocus();
+						linkReferenceId.setFocus();
 					}
 				}
 			}
 
 			protected function button1_clickHandler(event:MouseEvent):void
 			{
+				var self:GonzoLinkWindow = this;
+				var beginIndex:int;
+				
+				if (editor == null) {
+					this.onClose();
+					return;
+				}
+				
+				// create markdown to be inserted into text
+				var range:TextRange = new TextRange(editor, true);
 				var markdown:String = "[" + linkText.text + "]";
-				var ref:String;
-				
-				// need to search for existing references in the markdown
-				
 				if (isImplicit.selected) {
 					markdown += "[]";
-					ref = linkText.text;
 				} else {
 					markdown += "[" + linkReferenceId.text + "]";
-					ref = linkReferenceId.text;
 				}
 				
-				if (editor != null) {
-					var range:TextRange = new TextRange(editor, true);
+				// see if the reference ID exists already
+				var pattern:String = "(^|[\\r\\n])\\[(" + linkReferenceId.text + ")\\]\\:\\s*([^\\s\\t\\r\\n]+)";
+				var fullPattern:String = pattern + "\\s*(?:\"([^\"]+)\"){0,1}\\s*($|[\\r\\n])";
+				if (editor.text.search(new RegExp(pattern)) != -1) {
+					var matches:Array = editor.text.match(new RegExp(fullPattern));
+					if (matches != null && matches.length >= 6) {
+						// the data here matches the existing reference, just add the markdown
+						if (matches[2] == linkReferenceId.text &&
+							matches[3] == linkUrl.text &&
+							(matches[4] == linkTitle.text || 
+							 (matches[4] == undefined && linkTitle.text == ""))) {
+							beginIndex = range.beginIndex;
+							range.text = markdown;
+							editor.setSelection(beginIndex, beginIndex + markdown.length);
+							editor.dispatchEvent(new Event(Event.CHANGE));
+							this.onClose();
+						} else {
+							// warn if you are changing an existing reference
+							Alert.show("The reference ID '" + linkReferenceId.text + "' already exists. Do you want to overwrite it?",
+								"Overwrite reference?", Alert.YES | Alert.CANCEL, this, function(e:CloseEvent):void {
+									if (e.detail == Alert.YES) {
+										var tmp:String = "[" + linkReferenceId.text + "]: " + linkUrl.text + (linkTitle.text == "" ? "" : " \"" + linkTitle.text + "\"") + "\n";
+										beginIndex = range.beginIndex;
+										range.text = markdown;
+										var firstChar:String = matches[1] == undefined ? "" : matches[1];
+										var lastChar:String = matches[5] == undefined ? "" : matches[5];
+										editor.text = editor.text.replace(
+											new RegExp(fullPattern), 
+											(firstChar.search(/[\r\n]/) != -1 ? "\n" : "") + tmp + (lastChar.search(/[\r\n]/) != -1 ? "\n" : ""));
+										editor.setSelection(beginIndex, beginIndex + markdown.length);
+										editor.dispatchEvent(new Event(Event.CHANGE));
+										self.onClose();
+									} 
+								}
+							);
+						}
+					}
+				} else {
+					beginIndex = range.beginIndex;
 					range.text = markdown;
+					editor.text += (editor.text.charAt(editor.text.length-1).search(/[\r\n]/) != -1 ? "" : "\n") + 
+						"[" + linkReferenceId.text + "]: " + linkUrl.text + " " + 
+						(linkTitle.text == "" ? "" : " \"" + linkTitle.text + "\"");
+					editor.setSelection(beginIndex, beginIndex + markdown.length);
+					editor.dispatchEvent(new Event(Event.CHANGE));
+					this.onClose();
 				}
-				editor.text += "\n[" + ref + "]: " + linkUrl.text;
-				editor.dispatchEvent(new Event(Event.CHANGE));
-				// need to remove [] and () from text
-				this.onClose();
+			}
+
+
+			protected function linkText_changeHandler(event:TextOperationEvent):void
+			{
+				if (isImplicit.selected) {
+					linkReferenceId.text = linkText.text;
+				}
+			}
+
+
+			protected function isImplicit_changeHandler(event:Event):void
+			{
+				if (!isImplicit.selected) {
+					linkReferenceId.setFocus();
+					linkReferenceId.selectRange(0, linkReferenceId.text.length);
+				}
+				linkText_changeHandler(null);
 			}
 
 		]]>
@@ -65,19 +144,23 @@
 	<s:VGroup gap="10" paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10" width="100%">
 		<s:HGroup verticalAlign="middle" width="100%">
 			<s:Label text="Text:" width="80" fontWeight="bold"/>
-			<s:TextInput id="linkText" width="100%" />
+			<s:TextInput id="linkText" width="100%" change="linkText_changeHandler(event)" />
 		</s:HGroup>
 		<s:HGroup verticalAlign="middle" width="100%">
 			<s:Label text="Reference ID:" width="80" fontWeight="bold"/>
-			<s:TextInput id="linkReferenceId" width="100%" enabled="{!isImplicit.selected}"/>
+			<s:TextInput id="linkReferenceId" width="100%" enabled="{!isImplicit.selected}" />
 		</s:HGroup>
 		<s:HGroup verticalAlign="middle" width="100%">
 			<s:Label text="URL:" width="80" fontWeight="bold"/>
 			<s:TextInput id="linkUrl" width="100%" />
 		</s:HGroup>
+		<s:HGroup verticalAlign="middle" width="100%">
+			<s:Label text="Title (optional):" width="80" fontWeight="bold"/>
+			<s:TextInput id="linkTitle" width="100%" />
+		</s:HGroup>
 		<s:HGroup gap="0"  width="100%">
 			<s:HGroup width="100%" horizontalAlign="left">
-				<s:CheckBox id="isImplicit" label="implicit" selected="true"/>
+				<s:CheckBox id="isImplicit" label="implicit" selected="true" change="isImplicit_changeHandler(event)"/>
 			</s:HGroup>
 			<s:HGroup width="100%" gap="10" horizontalAlign="right">
 				<s:Button label="OK" click="button1_clickHandler(event)"/>
