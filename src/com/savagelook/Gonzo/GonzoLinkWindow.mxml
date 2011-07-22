@@ -65,7 +65,7 @@
 				
 				// create markdown to be inserted into text
 				var range:TextRange = new TextRange(editor, true);
-				var markdown:String = "[" + linkText.text + "]";
+				var markdown:String = (isImage.selected ? "!" : "") + "[" + linkText.text + "]";
 				if (isImplicit.selected) {
 					markdown += "[]";
 				} else {
@@ -159,8 +159,9 @@
 			<s:TextInput id="linkTitle" width="100%" />
 		</s:HGroup>
 		<s:HGroup gap="0"  width="100%">
-			<s:HGroup width="100%" horizontalAlign="left">
+			<s:HGroup width="100%" horizontalAlign="left" gap="10">
 				<s:CheckBox id="isImplicit" label="implicit" selected="true" change="isImplicit_changeHandler(event)"/>
+				<s:CheckBox id="isImage" label="image" selected="false"/>
 			</s:HGroup>
 			<s:HGroup width="100%" gap="10" horizontalAlign="right">
 				<s:Button label="OK" click="button1_clickHandler(event)"/>
