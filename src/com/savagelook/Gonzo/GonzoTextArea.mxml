@@ -14,6 +14,7 @@
 			import mx.controls.textClasses.TextRange;
 			import mx.core.mx_internal;
 			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
 			use namespace mx_internal;
 			
 			private static const UNDO_BUFFER_SIZE:uint = 30;
@@ -40,6 +41,10 @@
 				items.addItem({name:"Horizontal Rule", func:this.doHorizontalRule});
 				items.addItem({name:"Blockquote", func:this.shiftBlockquote});
 				items.addItem({name:"Code (block)", func:this.shiftCodeBlock});
+				
+				items.addItem({name:"Link...", func:this.doLink});
+				items.addItem({name:"Image...", func:this.doImage});
+				
 				items.addItem({name:"Link (inline)", func:this.doLinkInline});
 				items.addItem({name:"Image (inline)", func:this.doImageInline});
 				items.addItem({name:"Emphasis", func:this.doEmphasisTextRange});
@@ -48,7 +53,7 @@
 				
 				for (var i:uint = 0; i < items.length; i++) {
 					var object:Object = items.getItemAt(i);
-					var cmi:ContextMenuItem = new ContextMenuItem(object.name, i == 0 || i == 3);
+					var cmi:ContextMenuItem = new ContextMenuItem(object.name, i == 0 || i == 3 || i == 5);
 					cmi.data = object.func;
 					cmi.addEventListener(Event.SELECT, function(e:Event):void {
 						((e.target as ContextMenuItem).data as Function)();
@@ -160,6 +165,21 @@
 					);
 				}
 				this.dispatchEvent(new Event(Event.CHANGE));
+			}
+			
+			public function doImage():void {
+				this._doLinkOrImage(true);
+			}
+			
+			public function doLink():void {
+				this._doLinkOrImage(false);
+			}
+			
+			private function _doLinkOrImage(isImage:Boolean):void {
+				var linkWindow:GonzoLinkWindow = PopUpManager.createPopUp(this, GonzoLinkWindow, true) as GonzoLinkWindow;
+				linkWindow.editor = this;
+				linkWindow.isImage.selected = isImage;
+				PopUpManager.centerPopUp(linkWindow);
 			}
 			
 			public function doHeading(level:uint):void {

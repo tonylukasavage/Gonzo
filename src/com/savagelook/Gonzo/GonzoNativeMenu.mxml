@@ -340,7 +340,6 @@
 				var node:XML = event.item as XML;
 				var id:String = node.@id;
 				var editor:GonzoTextArea = gonzo.getCurrentEditor();
-				var linkWindow:GonzoLinkWindow;
 				
 				if (id.substr(0, 9) == "markdown_") {
 					if (editor == null) {
@@ -393,15 +392,9 @@
 				} else if (id == "markdown_imageInline") {
 					editor.doImageInline();
 				} else if (id == "markdown_link") {
-					linkWindow = PopUpManager.createPopUp(gonzo, GonzoLinkWindow, true) as GonzoLinkWindow;
-					linkWindow.editor = editor;
-					linkWindow.isImage.selected = false;
-					PopUpManager.centerPopUp(linkWindow);
+					editor.doLink();
 				} else if (id == "markdown_image") {
-					linkWindow = PopUpManager.createPopUp(gonzo, GonzoLinkWindow, true) as GonzoLinkWindow;
-					linkWindow.editor = editor;
-					linkWindow.isImage.selected = true;
-					PopUpManager.centerPopUp(linkWindow);
+					editor.doImage();
 				} else if (id == "markdown_em") {
 					editor.doEmphasisTextRange();
 				} else if (id == "markdown_strong") {
