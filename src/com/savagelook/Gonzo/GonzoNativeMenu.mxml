@@ -24,6 +24,8 @@
 					<menuitem type="separator"/>
 					<menuitem label="Export HTML..." keyEquivalent="h" controlKey="true" id="file_export_html"/>
 					<menuitem type="separator"/>
+					<menuitem label="Preferences..." keyEquivalent="," controlKey="true" id="file_preferences"/>
+					<menuitem type="separator"/>
 					<menuitem label="Quit" keyEquivalent="q" controlKey="true" id="file_exit"/>
 				</menuitem>
 				<menuitem label="Edit">
@@ -363,6 +365,8 @@
 					this.doFileCloseAll();
 				}  else if (id == "file_export_html") {
 					this.doFileExportHtml();
+				} else if (id == "file_preferences") {
+					gonzo.config.apply();
 				} else if (id == "file_exit") {
 					gonzo.checkForUnsavedEditors(NativeApplication.nativeApplication.exit);
 				} else if (id == "edit_undo") { 

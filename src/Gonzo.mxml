@@ -12,6 +12,7 @@
 	<fx:Script>
 		<![CDATA[
 			import com.adobe.linguistics.spelling.SpellUI;
+			import com.savagelook.Gonzo.GonzoConfiguration;
 			import com.savagelook.Gonzo.GonzoSeparatorEvent;
 			import com.savagelook.Gonzo.GonzoUtils;
 			
@@ -26,6 +27,8 @@
 			
 			[SkinPart(required="true", type="mx.controls.ProgressBar")]
 			public var progressBar:ProgressBar;
+			
+			public var config:GonzoConfiguration;
 
 			private static const preHtml:String = "<html><head><style>h1 { color:#ff0000; }</style></head><body>";
 			private static const postHtml:String = "</body></html>";
@@ -43,6 +46,34 @@
 				gonzoMenu.isMac = (Capabilities.os.toLowerCase().indexOf("mac os") >= 0);	
 				gonzoMenu.gonzo = this;	
 				GonzoUtils.DEFAULT_FILENAME = Gonzo.DEFAULT_FILENAME;
+				
+				config = new GonzoConfiguration();
+				config.addEventListener(Event.CHANGE, handleConfigurationApply);
+			}
+			
+			private function handleConfigurationApply(event:Event):void {
+				 var editors:Vector.<GonzoTextArea> = this.getEditors();
+				 for (var i:uint = 0; i < editors.length; i++) {
+					 editors[i].setStyle("contentBackgroundColor", config.values.editorBackgroundColor);
+					 editors[i].setStyle("color", config.values.editorTextColor);
+				 }
+			}
+			
+			public function getEditors():Vector.<GonzoTextArea> {
+				var editors:Vector.<GonzoTextArea> = new Vector.<GonzoTextArea>();
+				var tabNavigator:SuperTabNavigator = this.editorTabNavigator;
+				
+				for (var i:uint = 0; i < tabNavigator.numChildren; i++) {
+					var child:Object = tabNavigator.getChildAt(i);
+					if (child is VBox) {
+						var editor:GonzoTextArea = (child as VBox).getChildByName("editor") as GonzoTextArea;
+						if (editor != null) {
+							editors.push(editor);
+						}
+					}
+				}
+				
+				return editors;
 			}
 			
 			private function onCreationComplete():void {
@@ -215,6 +246,8 @@
 				editor.percentWidth = 100;
 				editor.setStyle("fontFamily", "Monaco");
 				editor.setStyle("fontSize", 16);
+				editor.setStyle("contentBackgroundColor", config.values.editorBackgroundColor);
+				editor.setStyle("color", config.values.editorTextColor);
 				
 				vbox.addChild(editor);
 				editorTabNavigator.addChild(vbox);
