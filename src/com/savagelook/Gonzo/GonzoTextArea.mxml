@@ -8,6 +8,7 @@
 			>
 	<fx:Script>
 		<![CDATA[
+			import com.savagelook.Gonzo.windows.GonzoLinkWindow;
 			import com.adobe.linguistics.spelling.SpellUI;
 			
 			import mx.collections.ArrayList;

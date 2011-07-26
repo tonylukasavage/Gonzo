@@ -80,6 +80,7 @@
 	</fx:Declarations>
 	<fx:Script>
 		<![CDATA[
+			import com.savagelook.Gonzo.windows.GonzoPreferenceWindow;
 			import mx.containers.VBox;
 			import mx.controls.Alert;
 			import mx.controls.textClasses.TextRange;
