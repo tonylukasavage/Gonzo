@@ -93,6 +93,7 @@
 							config.values = new GonzoConfigurationValues();
 							config.apply();
 							self._init();
+							self.onClose();
 						} 
 					}
 				);

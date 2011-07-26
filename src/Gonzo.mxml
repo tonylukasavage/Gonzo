@@ -60,6 +60,8 @@
 				 for (var i:uint = 0; i < editors.length; i++) {
 					 editors[i].setStyle("contentBackgroundColor", config.values.editorBackgroundColor);
 					 editors[i].setStyle("color", config.values.editorTextColor);
+					 editors[i].setStyle("fontFamily", config.values.fontName);
+					 editors[i].setStyle("fontSize", config.values.fontSize);
 				 }
 			}
 			
