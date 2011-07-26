@@ -13,9 +13,9 @@
 		<![CDATA[
 			import com.adobe.linguistics.spelling.SpellUI;
 			import com.savagelook.Gonzo.GonzoConfiguration;
+			import com.savagelook.Gonzo.GonzoConfigurationValues;
 			import com.savagelook.Gonzo.GonzoSeparatorEvent;
 			import com.savagelook.Gonzo.GonzoUtils;
-			import com.savagelook.Gonzo.GonzoConfigurationValues;
 			
 			import flash.net.registerClassAlias;
 			
@@ -123,7 +123,7 @@
 			private function onEditorComplete(event:Event):void {	
 				var editor:GonzoTextArea = event.target as GonzoTextArea;
 				var rawHtml:String = Showdown.makeHtml(editor.text);
-				var fullHtml:String = this.constructFullHtml(rawHtml);
+				var fullHtml:String = this.constructFullHtml(rawHtml, cssEditor.text);
 				
 				this.htmlVerticalScrollPosition = this.htmlRendered.verticalScrollPosition;
 				this.htmlRendered.htmlText = fullHtml;
@@ -265,6 +265,15 @@
 				return editor;
 			}
 
+
+			protected function cssEditor_changeHandler(event:Event):void
+			{
+				var editor:GonzoTextArea = this.getCurrentEditor();
+				if (editor != null) {
+					editor.dispatchEvent(new Event(Event.CHANGE));
+				}
+			}
+
 		]]>
 	</fx:Script>
 
@@ -320,7 +329,7 @@
 					<s:TextArea id="htmlRaw" height="100%" width="100%" editable="false" fontFamily="Monaco" fontSize="16"/>
 				</mx:VBox>	
 				<mx:VBox label="css" id="cssEditorTab">
-					<gonzo:GonzoTextArea id="cssEditor" height="100%" width="100%" fontFamily="Monaco" fontSize="16"/>
+					<gonzo:GonzoTextArea id="cssEditor" height="100%" width="100%" fontFamily="Monaco" fontSize="16" change="cssEditor_changeHandler(event)"/>
 				</mx:VBox>
 			</mx:TabNavigator>
 		</s:SkinnableContainer>
