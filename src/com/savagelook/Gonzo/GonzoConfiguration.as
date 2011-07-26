@@ -7,7 +7,7 @@ package com.savagelook.Gonzo
 
 	public class GonzoConfiguration implements IEventDispatcher
 	{
-		public static const CONFIG_SO_NAME = "config";
+		public static const CONFIG_SO_NAME:String = "config";
 		
 		public var values:GonzoConfigurationValues; 
 		
@@ -36,8 +36,8 @@ package com.savagelook.Gonzo
 			this.dispatchEvent(new Event(Event.CHANGE));
 		}
 
-		private function coalesce(... args) {
-			for (var arg in args) {
+		private function coalesce(... args):* {
+			for (var arg:* in args) {
 				if (arg != null && arg != undefined) {
 					return arg;
 				}

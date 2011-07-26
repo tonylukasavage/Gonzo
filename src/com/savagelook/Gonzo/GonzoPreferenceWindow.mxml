@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx" width="415" height="365"
+			   title="Preferences"
+			    creationComplete="titlewindow1_creationCompleteHandler(event)"
+				close="onClose();">
+	<fx:Declarations>
+		<s:ArrayList id="arrList" />
+		<s:ArrayCollection id="sizeList">
+			<fx:uint>8</fx:uint>
+			<fx:uint>9</fx:uint>
+			<fx:uint>10</fx:uint>
+			<fx:uint>11</fx:uint>
+			<fx:uint>12</fx:uint>
+			<fx:uint>13</fx:uint>
+			<fx:uint>14</fx:uint>
+			<fx:uint>16</fx:uint>
+			<fx:uint>18</fx:uint>
+			<fx:uint>24</fx:uint>
+			<fx:uint>36</fx:uint>
+			<fx:uint>48</fx:uint>
+			<fx:uint>64</fx:uint>
+			<fx:uint>72</fx:uint>
+			<fx:uint>96</fx:uint>
+			<fx:uint>144</fx:uint>
+			<fx:uint>288</fx:uint>
+		</s:ArrayCollection>
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import com.savagelook.Gonzo.CustomFontItemRenderer;
+			
+			import mx.controls.Alert;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			
+			import spark.events.IndexChangeEvent;
+			
+			public var config:GonzoConfiguration = null;
+
+			protected function titlewindow1_creationCompleteHandler(event:FlexEvent):void
+			{
+				var fontArr:Array = Font.enumerateFonts(true); 
+				arrList = new ArrayList(fontArr.sortOn("fontName"));
+				
+				if (config == null) {
+					config = new GonzoConfiguration();
+				}
+				
+				callLater(_init);
+			}
+			
+			private function _init():void {
+				this.editorBackgroundColor.selectedColor = config.values.editorBackgroundColor;
+				this.editorTextColor.selectedColor = config.values.editorTextColor;
+				
+				this.fontSizeList.selectedItem = config.values.fontSize;	
+				this.fontSizeList.validateNow();
+				this.fontSizeList.layout.verticalScrollPosition = this.fontSizeList.dataGroup.contentHeight * (this.fontSizeList.selectedIndex/(this.sizeList.length-1)) - (this.fontSizeList.height/2) + 8;
+				
+				this.fontList.selectedIndex = -1;
+				for (var i:uint = 0; i < this.arrList.length; i++) {
+					if (this.arrList.getItemAt(i).fontName == this.config.values.fontName) {
+						this.fontList.selectedIndex = i;
+						this.fontList.layout.verticalScrollPosition = this.fontList.dataGroup.contentHeight * (i/(this.arrList.length-1)) - (this.fontList.height/2) + 8;
+						break;
+					}
+				}
+			}
+			
+			private function onClose():void {
+				PopUpManager.removePopUp(this);
+			}
+			
+			private function applyPreferences(event:Event):void {
+				config.values.editorBackgroundColor = editorBackgroundColor.selectedColor;
+				config.values.editorTextColor = editorTextColor.selectedColor;
+				config.values.fontSize = uint(this.selectedFontSize.text);
+				config.values.fontName = this.selectedFont.text;
+				config.apply();
+				this.onClose();
+			}
+			
+			private function restoreDefaults():void {
+				var self:GonzoPreferenceWindow = this;
+				Alert.show("Are you sure you want to restore all Gonzo settings to default?", "Restore Defaults?",
+					Alert.YES | Alert.NO, this, function(e:CloseEvent):void {
+						if (e.detail == Alert.YES) {
+							config.values = new GonzoConfigurationValues();
+							config.apply();
+							self._init();
+						} 
+					}
+				);
+			}
+
+		]]>
+	</fx:Script>
+	<s:VGroup gap="10" paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10" width="100%">
+		<s:HGroup width="100%">
+			<s:HGroup verticalAlign="middle" width="40%" gap="10">
+				<s:Label text="Background Color:" fontWeight="bold"/>
+				<mx:ColorPicker id="editorBackgroundColor" showTextField="true" selectedColor="0xFFFFFF"/>
+			</s:HGroup>
+			<s:HGroup verticalAlign="middle" width="60%" gap="10">
+				<s:Label text="Text Color:" fontWeight="bold"/>
+				<mx:ColorPicker id="editorTextColor" showTextField="true" selectedColor="0x000000" />
+			</s:HGroup>
+		</s:HGroup>
+		
+		<mx:HRule width="100%"/>
+		
+		<s:HGroup verticalAlign="top" width="100%">
+			<s:Label text="Font:" width="80" fontWeight="bold"/>
+			<s:VGroup gap="3">
+				<s:TextInput text="{fontList.selectedItem.fontName}" editable="false" enabled="false" id="selectedFont" width="250"/>
+				<s:List id="fontList"
+						dataProvider="{arrList}"
+						labelField="fontName"
+						itemRenderer="com.savagelook.Gonzo.CustomFontItemRenderer"
+						fontSize="16"
+						useVirtualLayout="true"
+						width="250" height="200"
+						horizontalCenter="0" verticalCenter="0" />
+			</s:VGroup>
+			<s:VGroup gap="3">
+				<s:TextInput text="{fontSizeList.selectedItem}" id="selectedFontSize" restrict="0-9" width="50" />
+				<s:List id="fontSizeList" 
+						dataProvider="{sizeList}"
+						fontSize="16"
+						useVirtualLayout="true"
+						width="50"
+						height="200"
+						horizontalCenter="0" verticalCenter="0"
+						/>
+			</s:VGroup>
+		</s:HGroup>
+		
+		<mx:HRule width="100%"/>
+		
+		<s:HGroup gap="0"  width="100%">
+			<s:HGroup width="100%" horizontalAlign="left" gap="10">
+				<s:Button label="Restore Defaults" click="restoreDefaults();"/>
+			</s:HGroup>
+			<s:HGroup width="100%" gap="10" horizontalAlign="right">
+				<s:Button label="Apply" click="applyPreferences(event);"/>
+				<s:Button label="Cancel" click="onClose();"/>
+			</s:HGroup>
+		</s:HGroup>
+	</s:VGroup>
+</s:TitleWindow>

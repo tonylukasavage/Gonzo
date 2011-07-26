@@ -366,7 +366,9 @@
 				}  else if (id == "file_export_html") {
 					this.doFileExportHtml();
 				} else if (id == "file_preferences") {
-					gonzo.config.apply();
+					var prefWindow:GonzoPreferenceWindow = PopUpManager.createPopUp(gonzo, GonzoPreferenceWindow, true) as GonzoPreferenceWindow;
+					prefWindow.config = gonzo.config;
+					PopUpManager.centerPopUp(prefWindow);
 				} else if (id == "file_exit") {
 					gonzo.checkForUnsavedEditors(NativeApplication.nativeApplication.exit);
 				} else if (id == "edit_undo") { 

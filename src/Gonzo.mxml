@@ -15,6 +15,9 @@
 			import com.savagelook.Gonzo.GonzoConfiguration;
 			import com.savagelook.Gonzo.GonzoSeparatorEvent;
 			import com.savagelook.Gonzo.GonzoUtils;
+			import com.savagelook.Gonzo.GonzoConfigurationValues;
+			
+			import flash.net.registerClassAlias;
 			
 			import flexlib.controls.tabBarClasses.SuperTab;
 			import flexlib.events.SuperTabEvent;
@@ -47,6 +50,7 @@
 				gonzoMenu.gonzo = this;	
 				GonzoUtils.DEFAULT_FILENAME = Gonzo.DEFAULT_FILENAME;
 				
+				flash.net.registerClassAlias("com.savagelook.Gonzo", GonzoConfigurationValues);
 				config = new GonzoConfiguration();
 				config.addEventListener(Event.CHANGE, handleConfigurationApply);
 			}
@@ -244,8 +248,8 @@
 				editor.fullPath = filename;
 				editor.percentHeight = 100;
 				editor.percentWidth = 100;
-				editor.setStyle("fontFamily", "Monaco");
-				editor.setStyle("fontSize", 16);
+				editor.setStyle("fontFamily", config.values.fontName);
+				editor.setStyle("fontSize", config.values.fontSize);
 				editor.setStyle("contentBackgroundColor", config.values.editorBackgroundColor);
 				editor.setStyle("color", config.values.editorTextColor);
 				
