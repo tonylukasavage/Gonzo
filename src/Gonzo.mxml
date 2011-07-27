@@ -11,12 +11,16 @@
 			   skinClass="com.savagelook.Gonzo.skins.GonzoAppSkin">
 	<fx:Script>
 		<![CDATA[
+			import air.update.ApplicationUpdaterUI;
+			import air.update.events.UpdateEvent;
+			
 			import com.adobe.linguistics.spelling.SpellUI;
 			import com.savagelook.Gonzo.GonzoConfiguration;
 			import com.savagelook.Gonzo.GonzoConfigurationValues;
 			import com.savagelook.Gonzo.GonzoSeparatorEvent;
 			import com.savagelook.Gonzo.GonzoUtils;
 			
+			import flash.events.ErrorEvent;
 			import flash.net.registerClassAlias;
 			
 			import flexlib.controls.tabBarClasses.SuperTab;
@@ -42,6 +46,7 @@
 			public static var UNTITLED_INDEX:int = 1;
 
 			private var htmlVerticalScrollPosition:Number = 0;
+			private var appUpdater:ApplicationUpdaterUI;
 			
 			private function onInitialize():void
 			{
@@ -83,9 +88,31 @@
 			}
 			
 			private function onCreationComplete():void {
+				// center the window on the screen 
+				var screenBounds:Rectangle = Screen.mainScreen.bounds; 
+				nativeWindow.x = (screenBounds.width - nativeWindow.width) / 2; 
+				nativeWindow.y = (screenBounds.height - nativeWindow.height) / 2; 
+				
 				this.gonzoSeparator.addEventListener(GonzoSeparatorEvent.SEPARATOR_MOVED, this.onSeparatorMoved);
 				this.htmlRendered.addEventListener(Event.COMPLETE, this.onHtmlComplete);
 				this.editorTabNavigator.addEventListener(IndexChangedEvent.CHANGE, onEditorTabChange);
+				
+				appUpdater = new ApplicationUpdaterUI();
+				appUpdater.updateURL = "http://savagelook.com/gonzo_updater/update.xml";
+				appUpdater.addEventListener(UpdateEvent.INITIALIZED, onUpdaterUpdate);
+				appUpdater.addEventListener(ErrorEvent.ERROR, onUpdaterError);
+				appUpdater.isCheckForUpdateVisible = true;
+				appUpdater.isFileUpdateVisible = true;
+				appUpdater.isInstallUpdateVisible = true;
+				appUpdater.initialize();
+			}
+			
+			private function onUpdaterUpdate(event:UpdateEvent):void {
+				appUpdater.checkNow();
+			}
+			
+			private function onUpdaterError(event:ErrorEvent):void {
+				Alert.show(event.toString());
 			}
 			
 			protected function onClosing(event:Event):void
