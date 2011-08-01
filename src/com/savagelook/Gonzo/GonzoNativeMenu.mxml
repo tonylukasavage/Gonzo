@@ -73,7 +73,9 @@
 				<menuitem label="Help">
 					<menuitem label="Cheat Sheet" id="help_tutorial" keyEquivalent="t" controlKey="true" shiftKey="true"/>
 					<menuitem type="separator"/>
-					<menuitem label="About Gonzo..." id="help_about" enabled="false"/>
+					<menuitem label="Check for Updates..." id="help_updates" />
+					<menuitem type="separator"/>
+					<menuitem label="About Gonzo..." id="help_about" />
 				</menuitem>
 			</root>
 		</fx:XML>	
@@ -81,6 +83,7 @@
 	<fx:Script>
 		<![CDATA[
 			import com.savagelook.Gonzo.windows.GonzoPreferenceWindow;
+			import com.savagelook.Gonzo.windows.GonzoAboutWindow;
 			import mx.containers.VBox;
 			import mx.controls.Alert;
 			import mx.controls.textClasses.TextRange;
@@ -394,6 +397,14 @@
 					this.doWindowWordWrap(node.@toggled == "true");
 				} else if (id == "help_tutorial") {
 					this.doHelpCheatSheet();
+				} else if (id == "help_updates") {
+					gonzo.checkForUpdates(true);
+				} else if (id == "help_about") {
+					var aboutWindow:GonzoAboutWindow = PopUpManager.createPopUp(gonzo, GonzoAboutWindow, true) as GonzoAboutWindow;
+					aboutWindow.addEventListener(GonzoAboutWindow.CHECK_FOR_UPDATES, function(e:Event):void {
+						gonzo.checkForUpdates(true);
+					});
+					PopUpManager.centerPopUp(aboutWindow);
 				} else if (id == "markdown_linkInline") {
 					editor.doLinkInline();
 				} else if (id == "markdown_imageInline") {

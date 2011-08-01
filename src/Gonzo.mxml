@@ -97,11 +97,15 @@
 				this.htmlRendered.addEventListener(Event.COMPLETE, this.onHtmlComplete);
 				this.editorTabNavigator.addEventListener(IndexChangedEvent.CHANGE, onEditorTabChange);
 				
+				this.checkForUpdates();
+			}
+			
+			public function checkForUpdates(isVisible:Boolean=false):void {
 				appUpdater = new ApplicationUpdaterUI();
 				appUpdater.updateURL = "http://savagelook.com/gonzo_updater/update.xml";
 				appUpdater.addEventListener(UpdateEvent.INITIALIZED, onUpdaterUpdate);
 				appUpdater.addEventListener(ErrorEvent.ERROR, onUpdaterError);
-				appUpdater.isCheckForUpdateVisible = true;
+				appUpdater.isCheckForUpdateVisible = isVisible;
 				appUpdater.isFileUpdateVisible = true;
 				appUpdater.isInstallUpdateVisible = true;
 				appUpdater.initialize();

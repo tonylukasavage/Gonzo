@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx" width="400" height="180"
+			   title="About Gonzo"
+			   close="onClose();"
+			   creationComplete="titlewindow1_creationCompleteHandler(event)">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			
+			public static const CHECK_FOR_UPDATES:String = "GonzoAboutWindow_CheckForUpdates";
+			
+			private function onClose():void {
+				PopUpManager.removePopUp(this);
+			}
+
+			protected function titlewindow1_creationCompleteHandler(event:FlexEvent):void
+			{
+				var xml:XML = NativeApplication.nativeApplication.applicationDescriptor;
+				var ns:Namespace = xml.namespace();
+				versionLabel.text = "Version: " + xml.ns::versionLabel;
+			}
+
+
+			protected function label1_clickHandler(event:MouseEvent):void
+			{
+				this.dispatchEvent(new Event(GonzoAboutWindow.CHECK_FOR_UPDATES));
+				this.onClose();
+			}
+
+		]]>
+	</fx:Script>
+	<s:layout>
+		<s:HorizontalLayout gap="10" paddingBottom="10" paddingTop="10" paddingLeft="10" paddingRight="10" verticalAlign="middle"/>
+	</s:layout>
+	<s:Image source="assets/gonzo.png" />
+	<s:VGroup gap="5">
+		<s:Label text="Gonzo" fontSize="36" fontWeight="bold" />
+		<s:Label text="The lightweight markdown editor" fontSize="16"/>
+		<s:Label id="versionLabel" text="" fontSize="16"/>
+		<s:Label text="Check for updates..." fontStyle="italic" fontSize="14" color="#3333ff" click="label1_clickHandler(event)" buttonMode="true"/>
+	</s:VGroup>
+</s:TitleWindow>
