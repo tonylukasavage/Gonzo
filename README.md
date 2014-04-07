@@ -1,3 +1,5 @@
+> **NOTE: This project is old and unmaintained. It is here solely for reference purposes.**
+
 # Gonzo
 
 ![Gonzo Screenshot](http://savagelook.com/blog/wp-content/uploads/2011/07/snap.jpg)
